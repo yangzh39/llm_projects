@@ -1,0 +1,43 @@
+OFFENSE POLICY NOTES (Training / RAG demo)
+
+1) Ball possession and downs
+- The offense gets four downs to gain 10 yards. If they gain 10+ yards, they earn a new set of downs (“first down”).
+- If the offense fails to gain 10 yards after 4 downs, possession typically changes (turnover on downs) unless a punt/field goal attempt occurs on 4th down.
+
+2) Scoring options
+- Touchdown: scoring play worth 6 points when the ball is possessed in or crosses into the opponent’s end zone.
+- After touchdown:
+  - Extra point kick: 1 point try (kick from a fixed spot per league rules).
+  - Two-point conversion: 2 point try (run/pass attempt from short distance).
+- Field goal: worth 3 points if kicked through the uprights during a placekick attempt.
+- Safety: offense can concede 2 points if the ball becomes dead in its own end zone due to offensive actions (e.g., tackled in own end zone with possession).
+
+3) Common offensive pre-snap / snap rules
+- False start: offensive player moves illegally before the snap; play stops and penalty yards are enforced.
+- Illegal formation: not enough players on line of scrimmage or improper alignment; penalty.
+- Delay of game: snap not executed before the play clock expires; penalty.
+
+4) Passing rules (high-level)
+- A forward pass is allowed once per play and must be thrown from behind the line of scrimmage.
+- An “incomplete pass” stops the clock and results in the next down at the previous spot.
+- Interceptions: if a defender catches a forward pass in bounds, possession changes and the defender’s team becomes the offense.
+- Intentional grounding (conceptual): quarterback throws to avoid a sack without a realistic chance of completion; penalty and loss of down (details vary by situation).
+
+5) Running rules (high-level)
+- A runner is down when tackled or when any part of the body (other than hands/feet) touches the ground while contacted, depending on rules context.
+- Ball carrier may “slide” to give themselves up; play ends at the slide spot (QB protection concepts apply).
+
+6) Offensive holding (conceptual)
+- Blocking must be within legal technique; holding is when an offensive player illegally restricts a defender (e.g., grabbing outside frame to impede).
+- Holding often results in a significant loss of yardage and repeats the down (exact enforcement depends on league context).
+
+7) Substitution and personnel
+- Offense can substitute, but must allow the defense a reasonable chance to substitute (officials manage this).
+- Too many players in the huddle/on the field at the snap is a penalty.
+
+8) Clock management concepts
+- Spike: quarterback spikes ball immediately after snap to stop the clock; counts as an incomplete pass and uses a down.
+- Kneel: quarterback takes knee to keep clock running; used to close games.
+- Timeout usage and “two-minute warning” style stoppages influence play selection.
+
+End of offense notes.

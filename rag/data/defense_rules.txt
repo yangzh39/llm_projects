@@ -1,0 +1,38 @@
+DEFENSE POLICY NOTES (Training / RAG demo)
+
+1) Defensive objective
+- Prevent the offense from scoring by limiting yards, forcing turnovers, and stopping conversions on key downs.
+
+2) Turnovers and possession changes
+- Interception: defender catches a forward pass; possession changes immediately.
+- Fumble recovery: if the offense loses possession of the ball on the ground, either team can recover; recovery determines possession.
+- Turnover on downs: offense fails to gain required yardage by 4th down without punting or scoring; defense takes over at dead-ball spot.
+
+3) Basic tackling and contact principles (conceptual)
+- A legal tackle uses arms/shoulder/body positioning to bring down the ball carrier.
+- Defenders must avoid illegal contact areas and timing restrictions, especially on defenseless players.
+- Personal fouls (conceptual): actions that create unnecessary risk (late hits, hits to head/neck area) result in major penalties.
+
+4) Pass defense rules (high-level)
+- Defensive pass interference (conceptual): illegal contact that significantly restricts an eligible receiver’s opportunity to catch the ball while the pass is in the air.
+- Illegal contact (conceptual): contact beyond allowed zone/timing restrictions before the ball arrives; enforced as penalty yardage/automatic first down in many contexts.
+- Defensive holding (conceptual): grabbing a receiver before the pass arrives; penalty.
+
+5) Offside / neutral zone
+- Offside: defender crosses line of scrimmage before the snap; may cause a stoppage or free play depending on timing and contact.
+- Encroachment / neutral zone infraction concepts: defender lines up or moves into the neutral zone in a way that triggers a stoppage.
+
+6) Blitz and coverage concepts (non-rule, but policy notes)
+- Blitz: sending extra rushers to pressure QB; can be effective but may leave coverage gaps.
+- Zone coverage: defenders guard areas; man coverage: defenders guard specific receivers.
+- Communication breakdowns often lead to big plays.
+
+7) Defensive substitutions and 12 men
+- Too many defenders on the field at the snap is a penalty.
+- Defense is allowed time to substitute when offense substitutes (managed by officials).
+
+8) Goal-line and red-zone priorities
+- In short-yardage areas, defense may prioritize preventing touchdowns over allowing short completions.
+- Penalties in these situations can be especially costly due to automatic first downs and shorter field.
+
+End of defense notes.

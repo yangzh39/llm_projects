@@ -1,0 +1,34 @@
+SPECIAL TEAMS POLICY NOTES (Training / RAG demo)
+
+1) What counts as special teams
+- Kickoffs and kickoff returns
+- Punts and punt returns
+- Field goal and extra point attempts
+- Onside kick attempts
+- Fake punt/field goal concepts (still “special teams plays”)
+
+2) Kickoffs (high-level)
+- Kickoff starts a new possession sequence. Receiving team may return the kick or take a touchback.
+- Touchback concept: ball is brought out to a standard spot when the kick ends in the end zone or is downed according to rules.
+
+3) Punts (high-level)
+- Punt is a strategic kick on typically 4th down to transfer possession and improve field position.
+- If the punt is caught and returned, live play continues until the returner is tackled/out of bounds.
+- If the punt is downed without a return, possession changes at the dead-ball spot.
+- Touchback concept also applies when the punt ends in the end zone (ball comes out to standard spot).
+
+4) Field goals and extra points
+- Field goal is worth 3 points if the kicked ball passes through uprights and above the crossbar.
+- Extra point is a placekick after a touchdown (worth 1 point).
+- Two-point try is an offensive play, but it occurs in the post-touchdown phase (not a kick).
+
+5) Common special teams penalties (conceptual)
+- Offside/illegal formation on kick plays can negate returns or create re-kicks.
+- Illegal block in the back or holding can bring back a big return and change field position.
+- Kick-catch interference / fair catch interference (conceptual): interfering with a returner’s right to catch a kick.
+
+6) Fake plays and risk management
+- Fake punt/FG uses deception; it can extend a drive but risks giving opponent short field position.
+- Onside kick attempts aim to recover the kick; high variance play used when trailing late.
+
+End of special teams notes.
