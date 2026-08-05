@@ -1,23 +1,21 @@
 {
-  "run": "streamlit_chat",
+  "run": "non_fraud_declines_help",
   "events": [
     {
       "type": "llm_call",
       "purpose": "intent_classification",
       "attempt": 1,
-      "input": "what is the current GIC rate?",
+      "input": "What is the GIC rate?",
       "output": {
-        "human_message": "I'm sorry, but the Fraud Department can't help with GIC rates. I can transfer you to our Investments team who can assist you with that. Do you have any fraud-related concerns I can help with instead?",
+        "human_message": "The Fraud Department does not handle What is the GIC rate?. I can transfer you to Investments. Before that, is there a fraud-related service I can help you with?",
         "chatbot_message": {
           "goal": "NON_FRAUD",
-          "service": "GIC rates",
+          "service": "Other",
           "department": "Investments",
           "understood": true,
           "next_action": "OFFER_TRANSFER_OR_FRAUD_HELP",
-          "collected_facts": [
-            "Customer asked about current GIC rate."
-          ],
-          "reason": "Customer request is about GIC rates, which is not a fraud-related issue."
+          "collected_facts": [],
+          "reason": "Recorded result for reproducible evaluation"
         }
       }
     },
@@ -26,7 +24,7 @@
       "step": "intent_interpreted",
       "attempt": 1,
       "goal": "NON_FRAUD",
-      "service": "GIC rates",
+      "service": "Other",
       "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
     },
     {
@@ -38,17 +36,17 @@
       "type": "llm_call",
       "purpose": "customer_response_interpretation",
       "attempt": 1,
-      "input": "that's all, thanks",
+      "input": "No thanks",
       "context": {
         "question_type": "non_fraud_transfer_or_fraud_help"
       },
       "output": {
-        "human_message": "Thank you for contacting us. Have a great day!",
+        "human_message": "Thank you. I\u2019ll route your latest request correctly.",
         "chatbot_message": {
           "response_meaning": "NEGATIVE",
           "next_action": "STOP",
-          "interpreted_response": "The customer declines further assistance and ends the conversation.",
-          "reason": "The customer says 'that's all, thanks', indicating no further needs."
+          "interpreted_response": "No thanks",
+          "reason": "Recorded interpretation for reproducible evaluation"
         }
       }
     },
@@ -109,7 +107,7 @@
     },
     "evidence": {
       "outcome_checks": {
-        "expected_disposition_reached": "Expected any safe disposition; observed safe_stop",
+        "expected_disposition_reached": "Expected safe_stop; observed safe_stop",
         "successful_removal_verified_when_attempted": "Removal succeeded=False; final active state verified=False",
         "customer_informed_accurately": "Final response present=True; response consistent with removal result=True"
       },

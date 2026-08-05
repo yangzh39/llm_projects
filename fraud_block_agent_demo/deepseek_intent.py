@@ -21,21 +21,23 @@ Return exactly one JSON object with two top-level keys:
    - service: short service name, such as fraud block removal or GIC rates
    - department: the best destination in natural language, such as Fraud, Investments, Rewards, Payments, Card Services, or General Customer Service
    - understood: true or false
-   - next_action: one of ASK_CLARIFICATION, CONFIRM_BLOCK_REMOVAL, CONFIRM_TRANSFER, or TRANSFER_TO_FRAUD
+   - next_action: one of ASK_CLARIFICATION, CONFIRM_BLOCK_REMOVAL, START_AUTHENTICATION, OFFER_TRANSFER_OR_FRAUD_HELP, or TRANSFER_TO_FRAUD
    - collected_facts: a JSON array of short facts learned from the customer
    - reason: one short routing reason
 
 Rules:
+- The latest customer message has highest priority. Customers may change topics completely; never force a new request to fit an older topic.
+- A customer who only says their card is blocked or not working has not yet chosen between block removal and reporting suspected fraud. Use BLOCK_REMOVAL with CONFIRM_BLOCK_REMOVAL. In plain language, say you are sorry the card was blocked, explain that you can help remove the block if the transaction was theirs, and explain that you will transfer them to a fraud specialist if they suspect fraud. Do not ask customers to distinguish between technical terms such as "fraud alert" and "unauthorized activity."
+- When the customer explicitly asks to remove a block or unblock the card, and does not report suspected fraud, use BLOCK_REMOVAL with START_AUTHENTICATION. Acknowledge the request and explain that identity authentication is the next step. Do not ask them to confirm the removal request again.
 - If information is missing, use ASK_CLARIFICATION and make human_message ask a specific, natural follow-up based on what is missing.
-- If the customer appears to want a fraud block removed, use CONFIRM_BLOCK_REMOVAL and ask them to confirm that interpretation.
 - If the customer reports unauthorized activity, use TRANSFER_TO_FRAUD and explain the immediate transfer.
-- If a clear request belongs elsewhere, use CONFIRM_TRANSFER, name the most appropriate department without relying on a fixed department list, and ask permission to transfer.
+- If a clear request belongs elsewhere, use OFFER_TRANSFER_OR_FRAUD_HELP and name the most appropriate department without relying on a fixed department list. human_message must politely say the Fraud Department cannot handle that request, offer a transfer, and ask whether the customer has a fraud-related issue instead. Do not ask for product details that Fraud cannot use. For example, a GIC-rate question is already clear enough to offer Investments.
 - Never request card number, DOB, or other credentials. Deterministic tools handle those later.
 - Output JSON only, with no Markdown fences."""
 
 
 ALLOWED_GOALS = {"BLOCK_REMOVAL", "REPORT_FRAUD", "NON_FRAUD", "UNCLEAR"}
-ALLOWED_ACTIONS = {"ASK_CLARIFICATION", "CONFIRM_BLOCK_REMOVAL", "CONFIRM_TRANSFER", "TRANSFER_TO_FRAUD"}
+ALLOWED_ACTIONS = {"ASK_CLARIFICATION", "CONFIRM_BLOCK_REMOVAL", "START_AUTHENTICATION", "OFFER_TRANSFER_OR_FRAUD_HELP", "TRANSFER_TO_FRAUD"}
 
 RESPONSE_SYSTEM_PROMPT = """Interpret a customer's response to a specific question in a banking workflow.
 Understand natural language such as polite confirmations, refusals, corrections, uncertainty, and indirect answers. Do not rely on exact phrase matching.
@@ -43,15 +45,25 @@ Understand natural language such as polite confirmations, refusals, corrections,
 Return exactly one JSON object with:
 - human_message: a short, natural acknowledgement or a helpful clarification question shown to the customer
 - chatbot_message:
-  - response_meaning: AFFIRMATIVE, NEGATIVE, or UNCLEAR
-  - next_action: CONTINUE, STOP, or ASK_CLARIFICATION
+  - response_meaning: AFFIRMATIVE, NEGATIVE, FRAUD_REQUEST, NEW_REQUEST, or UNCLEAR
+  - next_action: CONTINUE, STOP, START_FRAUD_SESSION, RECLASSIFY, or ASK_CLARIFICATION
   - interpreted_response: a concise paraphrase
   - reason: one short explanation
 
-Use UNCLEAR and ASK_CLARIFICATION when the response is ambiguous. Do not make banking decisions and do not request credentials. Output JSON only."""
+Use NEW_REQUEST and RECLASSIFY when the customer changes the subject or provides a different service request instead of answering the question. The newest message must not be interpreted as confirmation of the older topic.
+For question_type non_fraud_transfer_or_fraud_help:
+- Use AFFIRMATIVE/CONTINUE only when the customer clearly accepts the offered department transfer.
+- Use FRAUD_REQUEST/START_FRAUD_SESSION when the customer states that they need help with fraud, a fraud alert, an unrecognized transaction, or a fraud-blocked card.
+- Use NEGATIVE/STOP when they decline both transfer and fraud assistance.
+- A bare yes that does not make clear whether they want transfer or fraud help is UNCLEAR; ask which option they want.
+For question_type block_removal_intent_confirmation:
+- Use AFFIRMATIVE/CONTINUE when the customer says they want the block removed or the card unblocked. This is sufficient consent to proceed to authentication; do not ask them to confirm again.
+- Use FRAUD_REQUEST/START_FRAUD_SESSION when the customer says they suspect fraud or do not recognize the activity.
+- Use NEGATIVE/STOP when they clearly do not want removal and do not report fraud.
+Use UNCLEAR and ASK_CLARIFICATION only when the response is genuinely ambiguous. For AFFIRMATIVE, human_message must be a brief acknowledgement only. For NEGATIVE, human_message must be a polite closing statement with no question, transfer offer, or offer of additional help. Do not introduce an unrelated topic or ask a new product question. Do not make banking decisions and do not request credentials. Output JSON only."""
 
-ALLOWED_RESPONSE_MEANINGS = {"AFFIRMATIVE", "NEGATIVE", "UNCLEAR"}
-ALLOWED_RESPONSE_ACTIONS = {"CONTINUE", "STOP", "ASK_CLARIFICATION"}
+ALLOWED_RESPONSE_MEANINGS = {"AFFIRMATIVE", "NEGATIVE", "FRAUD_REQUEST", "NEW_REQUEST", "UNCLEAR"}
+ALLOWED_RESPONSE_ACTIONS = {"CONTINUE", "STOP", "START_FRAUD_SESSION", "RECLASSIFY", "ASK_CLARIFICATION"}
 
 
 def _call_deepseek(system_prompt: str, message: str) -> dict[str, Any]:
@@ -110,6 +122,8 @@ def interpret_response_with_deepseek(message: str, context: dict[str, Any]) -> d
     valid_pair = {
         "AFFIRMATIVE": "CONTINUE",
         "NEGATIVE": "STOP",
+        "FRAUD_REQUEST": "START_FRAUD_SESSION",
+        "NEW_REQUEST": "RECLASSIFY",
         "UNCLEAR": "ASK_CLARIFICATION",
     }
     if valid_pair[chatbot_message["response_meaning"]] != chatbot_message["next_action"]:

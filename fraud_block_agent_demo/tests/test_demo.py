@@ -10,6 +10,23 @@ from run_evaluation import run_case  # noqa: E402
 
 
 class FraudBlockDemoTests(unittest.TestCase):
+    def test_new_customer_topic_replaces_stale_topic(self):
+        payload = run_case("topic_switch_to_block_removal")
+        trace = payload["result"]["trace"]
+        tools = [event.get("tool") for event in trace]
+        intent_calls = [event for event in trace if event.get("purpose") == "intent_classification"]
+        block_confirmation = [
+            event
+            for event in trace
+            if event.get("purpose") == "customer_response_interpretation"
+            and event.get("context", {}).get("question_type") == "block_removal_intent_confirmation"
+        ]
+        self.assertNotIn("transfer_to_department", tools)
+        self.assertIn("remove_fraud_block", tools)
+        self.assertEqual(2, len(intent_calls))
+        self.assertEqual("I want to remove the block", block_confirmation[0]["input"])
+        self.assertEqual("PASS", payload["evaluation"]["overall_result"])
+
     def test_generic_request_can_be_clarified(self):
         payload = run_case("clarified_block_removal")
         model_calls = [
@@ -29,8 +46,23 @@ class FraudBlockDemoTests(unittest.TestCase):
         self.assertEqual("transferred", payload["result"]["disposition"])
         self.assertEqual("PASS", payload["evaluation"]["overall_result"])
 
+    def test_non_fraud_customer_can_decline_and_close(self):
+        payload = run_case("non_fraud_declines_help")
+        tools = [event.get("tool") for event in payload["result"]["trace"]]
+        self.assertNotIn("transfer_to_department", tools)
+        self.assertNotIn("authenticate_customer", tools)
+        self.assertEqual("safe_stop", payload["result"]["disposition"])
+
     def test_success(self):
         payload = run_case("success")
+        confirmation_calls = [
+            event
+            for event in payload["result"]["trace"]
+            if event.get("type") == "llm_call"
+            and event.get("purpose") == "customer_response_interpretation"
+            and event.get("context", {}).get("question_type") == "block_removal_intent_confirmation"
+        ]
+        self.assertEqual([], confirmation_calls)
         self.assertEqual("PASS", payload["evaluation"]["overall_result"])
 
     def test_reported_fraud_never_authenticates(self):

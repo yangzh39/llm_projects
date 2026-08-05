@@ -7,13 +7,13 @@
       "attempt": 1,
       "input": "How many rewards points do I have?",
       "output": {
-        "human_message": "The Fraud Department does not handle How many rewards points do I have?. I can transfer you to Rewards. Would you like me to do that?",
+        "human_message": "The Fraud Department does not handle How many rewards points do I have?. I can transfer you to Rewards. Before that, is there a fraud-related service I can help you with?",
         "chatbot_message": {
           "goal": "NON_FRAUD",
           "service": "Other",
           "department": "Rewards",
           "understood": true,
-          "next_action": "CONFIRM_TRANSFER",
+          "next_action": "OFFER_TRANSFER_OR_FRAUD_HELP",
           "collected_facts": [],
           "reason": "Recorded result for reproducible evaluation"
         }
@@ -25,7 +25,7 @@
       "attempt": 1,
       "goal": "NON_FRAUD",
       "service": "Other",
-      "action": "CONFIRM_TRANSFER"
+      "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
     },
     {
       "type": "workflow_step",
@@ -38,14 +38,14 @@
       "attempt": 1,
       "input": "yes",
       "context": {
-        "question_type": "department_transfer_confirmation"
+        "question_type": "non_fraud_transfer_or_fraud_help"
       },
       "output": {
-        "human_message": "Thank you. I\u2019ve understood your response.",
+        "human_message": "Thank you. I\u2019ll route your latest request correctly.",
         "chatbot_message": {
           "response_meaning": "AFFIRMATIVE",
           "next_action": "CONTINUE",
-          "interpreted_response": "Customer confirmed",
+          "interpreted_response": "yes",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
       }
@@ -53,7 +53,7 @@
     {
       "type": "workflow_step",
       "step": "customer_response_interpreted",
-      "question_type": "department_transfer_confirmation",
+      "question_type": "non_fraud_transfer_or_fraud_help",
       "meaning": "AFFIRMATIVE"
     },
     {

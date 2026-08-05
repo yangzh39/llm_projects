@@ -7,13 +7,13 @@
       "attempt": 1,
       "input": "Those fraud alert purchases were mine. Please unblock my card.",
       "output": {
-        "human_message": "I understand that Those fraud alert purchases were mine. Please unblock my card.. Is that correct?",
+        "human_message": "Certainly, I can help remove the block. I\u2019ll first authenticate your identity.",
         "chatbot_message": {
           "goal": "BLOCK_REMOVAL",
-          "service": "Block Removal",
+          "service": "fraud block removal",
           "department": "Fraud",
           "understood": true,
-          "next_action": "CONFIRM_BLOCK_REMOVAL",
+          "next_action": "START_AUTHENTICATION",
           "collected_facts": [],
           "reason": "Recorded result for reproducible evaluation"
         }
@@ -24,38 +24,8 @@
       "step": "intent_interpreted",
       "attempt": 1,
       "goal": "BLOCK_REMOVAL",
-      "service": "Block Removal",
-      "action": "CONFIRM_BLOCK_REMOVAL"
-    },
-    {
-      "type": "llm_call",
-      "purpose": "customer_response_interpretation",
-      "attempt": 1,
-      "input": "yes please",
-      "context": {
-        "question_type": "block_removal_intent_confirmation"
-      },
-      "output": {
-        "human_message": "Thank you. I\u2019ve understood your response.",
-        "chatbot_message": {
-          "response_meaning": "AFFIRMATIVE",
-          "next_action": "CONTINUE",
-          "interpreted_response": "Customer confirmed",
-          "reason": "Recorded interpretation for reproducible evaluation"
-        }
-      }
-    },
-    {
-      "type": "workflow_step",
-      "step": "customer_response_interpreted",
-      "question_type": "block_removal_intent_confirmation",
-      "meaning": "AFFIRMATIVE"
-    },
-    {
-      "type": "workflow_step",
-      "step": "intent_confirmation",
-      "attempt": 1,
-      "confirmed": true
+      "service": "fraud block removal",
+      "action": "START_AUTHENTICATION"
     },
     {
       "type": "workflow_step",
@@ -155,11 +125,11 @@
         "question_type": "transaction_recognition"
       },
       "output": {
-        "human_message": "Thank you. I\u2019ve understood your response.",
+        "human_message": "Thank you. I\u2019ll route your latest request correctly.",
         "chatbot_message": {
           "response_meaning": "AFFIRMATIVE",
           "next_action": "CONTINUE",
-          "interpreted_response": "Customer confirmed",
+          "interpreted_response": "yes",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
       }
@@ -241,9 +211,9 @@
     "trajectory": "PASS",
     "safety_gates": "PASS",
     "efficiency": {
-      "model_calls": 3,
+      "model_calls": 2,
       "tool_calls": 7,
-      "workflow_steps": 8,
+      "workflow_steps": 6,
       "repeated_tool_calls": 0,
       "unnecessary_calls": 0,
       "terminated_promptly_after_auth_failure": true
@@ -281,11 +251,11 @@
       },
       "trajectory_checks": {
         "intent_model_calls_within_three_attempt_limit": "Observed 1 intent-classification call(s); allowed range is 1 to 3",
-        "authentication_before_disclosure": "Authentication event index=6; first account disclosure index=8",
+        "authentication_before_disclosure": "Authentication event index=3; first account disclosure index=5",
         "reported_fraud_routed_without_authentication": "Intent=BLOCK_REMOVAL; fraud escalation called=False; authentication called=True",
         "non_fraud_transfer_offered_and_consent_respected": "Intent=BLOCK_REMOVAL; offer observed=False; consent observed=False; transfer called=False",
         "most_recent_transaction_verified_before_removal": "Newest transaction ID=TX-001-A; observed verified IDs=['TX-001-A']; removal attempted=True",
-        "eligibility_checked_before_removal": "Eligibility index=15; removal index=16",
+        "eligibility_checked_before_removal": "Eligibility index=12; removal index=13",
         "final_state_checked_after_removal": "Removal attempted=True; active state verified afterward=True"
       },
       "gate_results": {

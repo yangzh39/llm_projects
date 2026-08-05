@@ -36,11 +36,11 @@
         "question_type": "block_removal_intent_confirmation"
       },
       "output": {
-        "human_message": "Thank you. I\u2019ve understood your response.",
+        "human_message": "Thank you. I\u2019ll route your latest request correctly.",
         "chatbot_message": {
           "response_meaning": "AFFIRMATIVE",
           "next_action": "CONTINUE",
-          "interpreted_response": "Customer confirmed",
+          "interpreted_response": "yes",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
       }
@@ -169,11 +169,11 @@
         "question_type": "transaction_recognition"
       },
       "output": {
-        "human_message": "Thank you. I\u2019ve understood your response.",
+        "human_message": "Thank you. I\u2019ll route your latest request correctly.",
         "chatbot_message": {
           "response_meaning": "AFFIRMATIVE",
           "next_action": "CONTINUE",
-          "interpreted_response": "Customer confirmed",
+          "interpreted_response": "yes",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
       }

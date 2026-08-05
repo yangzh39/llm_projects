@@ -68,18 +68,19 @@ def run_case(name: str) -> dict[str, Any]:
         classification_index += 1
         legacy_intent = selected["intent"]
         goal = "NON_FRAUD" if legacy_intent == "OTHER" else legacy_intent
-        action = {
+        action = selected.get("next_action") or {
             "BLOCK_REMOVAL": "CONFIRM_BLOCK_REMOVAL",
             "REPORT_FRAUD": "TRANSFER_TO_FRAUD",
-            "OTHER": "CONFIRM_TRANSFER",
+            "OTHER": "OFFER_TRANSFER_OR_FRAUD_HELP",
             "UNCLEAR": "ASK_CLARIFICATION",
         }[legacy_intent]
         department = selected.get("department", scenario.get("department", "Fraud")).replace("_", " ").title()
         summary = selected.get("summary", scenario.get("summary", scenario["request"]))
         human_messages = {
             "CONFIRM_BLOCK_REMOVAL": f"I understand that {summary}. Is that correct?",
+            "START_AUTHENTICATION": "Certainly, I can help remove the block. I’ll first authenticate your identity.",
             "TRANSFER_TO_FRAUD": "This may involve unauthorized activity. I’m transferring you to a fraud specialist now.",
-            "CONFIRM_TRANSFER": f"The Fraud Department does not handle {summary}. I can transfer you to {department}. Would you like me to do that?",
+            "OFFER_TRANSFER_OR_FRAUD_HELP": f"The Fraud Department does not handle {summary}. I can transfer you to {department}. Before that, is there a fraud-related service I can help you with?",
             "ASK_CLARIFICATION": f"I want to make sure I direct you correctly. {summary}. Could you tell me a little more?",
         }
         return {
@@ -97,14 +98,22 @@ def run_case(name: str) -> dict[str, Any]:
 
     def recorded_response_interpreter(message: str, _context: dict[str, Any]) -> dict[str, Any]:
         normalized = message.strip().lower()
+        configured_meaning = scenario.get("response_meanings", {}).get(normalized)
         affirmative = normalized in {"yes", "yes please", "y", "correct"}
-        meaning = "AFFIRMATIVE" if affirmative else "NEGATIVE"
+        meaning = configured_meaning or ("AFFIRMATIVE" if affirmative else "NEGATIVE")
+        next_action = {
+            "AFFIRMATIVE": "CONTINUE",
+            "NEGATIVE": "STOP",
+            "FRAUD_REQUEST": "START_FRAUD_SESSION",
+            "NEW_REQUEST": "RECLASSIFY",
+            "UNCLEAR": "ASK_CLARIFICATION",
+        }[meaning]
         return {
-            "human_message": "Thank you. I’ve understood your response.",
+            "human_message": "Thank you. I’ll route your latest request correctly.",
             "chatbot_message": {
                 "response_meaning": meaning,
-                "next_action": "CONTINUE" if affirmative else "STOP",
-                "interpreted_response": "Customer confirmed" if affirmative else "Customer declined",
+                "next_action": next_action,
+                "interpreted_response": message,
                 "reason": "Recorded interpretation for reproducible evaluation",
             },
         }

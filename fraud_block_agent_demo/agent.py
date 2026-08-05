@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import re
 from typing import Any, Callable
@@ -49,7 +50,7 @@ class FraudBlockAgent:
             question_type: str,
             question: str,
             details: dict[str, Any] | None = None,
-        ) -> bool | None:
+        ) -> tuple[str | None, str]:
             response = raw_response
             for response_attempt in range(1, 4):
                 interpretation = interpret_customer_response(
@@ -69,20 +70,20 @@ class FraudBlockAgent:
                     }
                 )
                 self._step("customer_response_interpreted", question_type=question_type, meaning=meaning)
+                if meaning in {"AFFIRMATIVE", "NEGATIVE", "FRAUD_REQUEST", "NEW_REQUEST"}:
+                    return meaning, response
                 present(str(interpretation.get("human_message", "")).strip(), chatbot_message)
-                if meaning == "AFFIRMATIVE":
-                    return True
-                if meaning == "NEGATIVE":
-                    return False
                 if response_attempt < 3:
                     response = answer("response_clarification", {"prompt": "Customer: ", "question_type": question_type})
-            return None
+            return None, response
 
         current_message = request
-        clarification_history: list[str] = []
+        conversation_history: list[dict[str, str]] = [{"role": "customer", "message": request}]
         classification: dict[str, Any] = {}
         goal = "UNCLEAR"
-        for attempt in range(1, 4):
+        attempt = 0
+        while attempt < 3:
+            attempt += 1
             classification = classify_intent(current_message)
             human_message = str(classification.get("human_message", "")).strip()
             chatbot_message = classification.get("chatbot_message", {})
@@ -102,11 +103,13 @@ class FraudBlockAgent:
             )
             self._step("intent_interpreted", attempt=attempt, goal=goal, service=service, action=action)
             present(human_message, chatbot_message)
+            conversation_history.append({"role": "assistant", "message": human_message})
 
             valid_pair = (
                 action == "ASK_CLARIFICATION"
                 or (action == "CONFIRM_BLOCK_REMOVAL" and goal == "BLOCK_REMOVAL")
-                or (action == "CONFIRM_TRANSFER" and goal == "NON_FRAUD")
+                or (action == "START_AUTHENTICATION" and goal == "BLOCK_REMOVAL")
+                or (action == "OFFER_TRANSFER_OR_FRAUD_HELP" and goal == "NON_FRAUD")
                 or (action == "TRANSFER_TO_FRAUD" and goal == "REPORT_FRAUD")
             )
             if not valid_pair:
@@ -121,40 +124,80 @@ class FraudBlockAgent:
                     human_message,
                 )
 
-            if action == "CONFIRM_TRANSFER":
+            if action == "START_AUTHENTICATION":
+                self._step("intent_detected", intent="BLOCK_REMOVAL", attempts=attempt)
+                break
+
+            if action == "OFFER_TRANSFER_OR_FRAUD_HELP":
                 self._step("department_transfer_offered", department=department)
                 raw_response = answer("department_transfer_confirmation", {"prompt": "Customer: ", "department": department})
-                accepted = interpret_reply(
+                response_meaning, interpreted_response = interpret_reply(
                     raw_response,
-                    question_type="department_transfer_confirmation",
+                    question_type="non_fraud_transfer_or_fraud_help",
                     question=human_message,
                     details={"department": department},
                 )
+                accepted = response_meaning == "AFFIRMATIVE"
                 self._step("department_transfer_confirmation", department=department, confirmed=accepted)
                 if accepted:
                     self.tools.transfer_to_department(department)
                     return self._finish(f"I’m transferring you to {department} now.", "transferred")
-                if accepted is None:
+                if response_meaning == "NEW_REQUEST":
+                    conversation_history.append({"role": "customer", "message": interpreted_response})
+                    current_message = json.dumps(
+                        {"instruction": "Route the customer's latest message; it may replace the earlier topic.", "conversation": conversation_history}
+                    )
+                    continue
+                if response_meaning == "FRAUD_REQUEST":
+                    conversation_history.append({"role": "customer", "message": interpreted_response})
+                    current_message = json.dumps(
+                        {
+                            "instruction": "Start a fresh fraud-only routing chain from the customer's latest fraud request.",
+                            "conversation": conversation_history,
+                        }
+                    )
+                    attempt = 0
+                    self._step("fraud_routing_chain_started", reason="Customer requested fraud help after a non-fraud inquiry")
+                    continue
+                if response_meaning is None:
                     return self._escalate("Transfer consent remained unclear", "I could not confirm your transfer choice. I’m transferring you to a fraud specialist for help.")
-                return self._finish("Okay. No transfer was made. Please contact us again if you need help.", "safe_stop")
+                return self._finish("Thank you for contacting the Fraud Department. Take care.", "safe_stop")
 
             clarification = ""
             if action == "CONFIRM_BLOCK_REMOVAL":
                 confirmation_response = answer("block_removal_intent_confirmation", {"prompt": "Customer: "})
-                confirmed = interpret_reply(
+                response_meaning, interpreted_response = interpret_reply(
                     confirmation_response,
                     question_type="block_removal_intent_confirmation",
                     question=human_message,
                     details={"service": service},
                 )
+                confirmed = response_meaning == "AFFIRMATIVE"
                 self._step("intent_confirmation", attempt=attempt, confirmed=confirmed)
                 if confirmed:
                     self._step("intent_detected", intent="BLOCK_REMOVAL", attempts=attempt)
                     goal = "BLOCK_REMOVAL"
                     break
-                if confirmed is None:
+                if response_meaning == "NEW_REQUEST":
+                    conversation_history.append({"role": "customer", "message": interpreted_response})
+                    current_message = json.dumps(
+                        {"instruction": "Route the customer's latest message; it may replace the earlier topic.", "conversation": conversation_history}
+                    )
+                    continue
+                if response_meaning == "FRAUD_REQUEST":
+                    conversation_history.append({"role": "customer", "message": interpreted_response})
+                    current_message = json.dumps(
+                        {
+                            "instruction": "Start a fresh fraud-only routing chain because the customer now suspects fraud.",
+                            "conversation": conversation_history,
+                        }
+                    )
+                    attempt = 0
+                    self._step("fraud_routing_chain_started", reason="Customer reported suspected fraud during block-removal routing")
+                    continue
+                if response_meaning is None:
                     return self._escalate("Block-removal intent confirmation remained unclear", "I could not safely confirm your request. I’m transferring you to a fraud specialist.")
-                clarification = f"The customer rejected the previous interpretation by replying: {confirmation_response}"
+                clarification = confirmation_response
 
             if attempt == 3:
                 return self._escalate(
@@ -167,10 +210,12 @@ class FraudBlockAgent:
                     "llm_clarification",
                     {"prompt": "Customer: ", "attempt": attempt + 1},
                 ).strip()
-            clarification_history.append(clarification)
-            current_message = (
-                f"Original request: {request}\n"
-                f"Customer clarifications: {' | '.join(clarification_history)}"
+            conversation_history.append({"role": "customer", "message": clarification})
+            current_message = json.dumps(
+                {
+                    "instruction": "Route the customer's latest message; it may clarify or completely replace the earlier topic.",
+                    "conversation": conversation_history,
+                }
             )
 
         if goal != "BLOCK_REMOVAL":
@@ -179,7 +224,12 @@ class FraudBlockAgent:
                 "I could not safely route this request. I’m transferring you to a fraud specialist.",
             )
 
-        card_number = answer("card_number", {"prompt": "Assistant: To verify your identity, please enter the full fake card number: "}).strip()
+        card_number = answer(
+            "card_number",
+            {
+                "prompt": "Assistant: Certainly. Before I remove the block, I need to authenticate your identity. Please enter the full fake card number: "
+            },
+        ).strip()
         date_of_birth = answer("date_of_birth", {"prompt": "Assistant: Please enter your date of birth (YYYY-MM-DD): "}).strip()
         auth = self.tools.authenticate_customer(card_number, date_of_birth)
         if not auth["authenticated"]:
@@ -220,14 +270,15 @@ class FraudBlockAgent:
                     "is_latest": index == 0,
                 },
             )
-            recognized = interpret_reply(
+            response_meaning, _interpreted_response = interpret_reply(
                 response,
                 question_type="transaction_recognition",
                 question=f"Do you recognize the {transaction['date']} transaction at {transaction['merchant']} for ${transaction['amount']:.2f}?",
                 details={"transaction_id": transaction["transaction_id"]},
             )
-            if recognized is None:
+            if response_meaning in {None, "NEW_REQUEST"}:
                 return self._escalate("Transaction recognition remained unclear", "I could not confirm whether you recognize the transaction. I’m transferring you to a fraud specialist.")
+            recognized = response_meaning == "AFFIRMATIVE"
             self._step("transaction_verified", transaction_id=transaction["transaction_id"], recognized=recognized)
             verified_ids.append(transaction["transaction_id"])
             if recognized:

@@ -1,6 +1,25 @@
 """Recorded, deterministic cases used only by run_evaluation.py."""
 
 EVALUATION_CASES = {
+    "topic_switch_to_block_removal": {
+        "title": "Customer switches from GICs to a blocked card",
+        "request": "What is the GIC rate?",
+        "intent": "BLOCK_REMOVAL",
+        "classifications": [
+            {"intent": "OTHER", "service": "GIC rates", "summary": "you want information about GIC rates", "department": "Investments"},
+            {"intent": "BLOCK_REMOVAL", "service": "fraud block removal", "summary": "your card is blocked and you want help removing the block", "department": "Fraud"}
+        ],
+        "department_transfer": "Actually, my card is blocked",
+        "response_meanings": {
+            "actually, my card is blocked": "FRAUD_REQUEST",
+            "i want to remove the block": "AFFIRMATIVE",
+        },
+        "intent_confirmations": ["I want to remove the block"],
+        "card_number": "9000000000001001",
+        "date_of_birth": "1990-01-15",
+        "recognition": {"TX-001-A": "yes"},
+        "expected_disposition": "completed",
+    },
     "clarified_block_removal": {
         "title": "Generic request clarified as block removal",
         "request": "Can you help me with my card?",
@@ -25,10 +44,27 @@ EVALUATION_CASES = {
         "department_transfer": "yes",
         "expected_disposition": "transferred",
     },
+    "non_fraud_declines_help": {
+        "title": "Non-fraud customer declines transfer and fraud help",
+        "request": "What is the GIC rate?",
+        "intent": "OTHER",
+        "department": "INVESTMENTS",
+        "department_transfer": "No thanks",
+        "expected_disposition": "safe_stop",
+    },
     "success": {
         "title": "Successful removal",
         "request": "Those fraud alert purchases were mine. Please unblock my card.",
         "intent": "BLOCK_REMOVAL",
+        "classifications": [
+            {
+                "intent": "BLOCK_REMOVAL",
+                "service": "fraud block removal",
+                "summary": "you recognize the transaction and explicitly want the block removed",
+                "department": "Fraud",
+                "next_action": "START_AUTHENTICATION",
+            }
+        ],
         "card_number": "9000000000001001",
         "date_of_birth": "1990-01-15",
         "recognition": {"TX-001-A": "yes"},

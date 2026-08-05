@@ -54,7 +54,7 @@ Every conversational response is also interpreted by DeepSeek rather than matche
 
 - `BLOCK_REMOVAL` continues to authentication.
 - `REPORT_FRAUD` transfers directly to a mock fraud specialist and stops.
-- `NON_FRAUD` explains that the Fraud Department does not handle the request, dynamically identifies a suitable department, and asks permission before transferring.
+- `NON_FRAUD` explains that the Fraud Department does not handle the request, offers the appropriate department transfer, and asks whether the customer has a fraud-related need. Accepting the transfer ends the session; declining both options closes politely; stating a fraud need starts a fresh three-attempt fraud-routing chain.
 - `UNCLEAR` generates a context-specific clarification question rather than routing prematurely.
 
 After the customer confirms a block-removal interpretation, the program prompts for the full fake card number and DOB and asks the customer to recognize the most recent flagged transaction. When identity, transaction recognition, and deterministic eligibility checks pass, the block is removed immediately without another confirmation prompt. Because this is a fake-data teaching demo, credential input is visible for usability; saved traces still mask the card number and redact the DOB. The interactive script shows only customer-facing messages; structured traces are saved silently for later evaluation work.
@@ -75,7 +75,7 @@ For example, a GIC question can produce a natural offer to transfer to Investmen
   "service": "GIC rates",
   "department": "Investments",
   "understood": true,
-  "next_action": "CONFIRM_TRANSFER",
+  "next_action": "OFFER_TRANSFER_OR_FRAUD_HELP",
   "collected_facts": ["Customer asked for the current GIC rate"],
   "reason": "GIC information belongs to Investments"
 }

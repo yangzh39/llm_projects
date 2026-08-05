@@ -17,6 +17,7 @@ from reporting import save_trace
 
 
 ROOT = Path(__file__).resolve().parent
+APP_VERSION = "6-direct-authentication-routing"
 
 
 class AgentSession:
@@ -69,7 +70,8 @@ class AgentSession:
 
 
 def initialize_state() -> None:
-    if "agent_session" not in st.session_state:
+    if st.session_state.get("app_version") != APP_VERSION:
+        st.session_state.app_version = APP_VERSION
         st.session_state.agent_session = AgentSession()
         st.session_state.messages = []
         st.session_state.started = False
@@ -138,9 +140,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-if st.session_state.finished:
-    st.info("This conversation has ended. Start a new conversation from the sidebar.")
-elif st.session_state.waiting_for_input:
+if not st.session_state.finished and st.session_state.waiting_for_input:
     prompt = "Describe how I can help" if not st.session_state.started else "Your response"
     if customer_message := st.chat_input(prompt):
         pending_kind = st.session_state.pending_kind
