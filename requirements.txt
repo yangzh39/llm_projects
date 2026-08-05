@@ -47,6 +47,7 @@ shellingham==1.5.4
 sse-starlette==3.2.0
 starlette==0.52.1
 starlette-context==0.3.6
+streamlit>=1.40,<2
 sympy==1.14.0
 threadpoolctl==3.6.0
 tokenizers==0.21.4

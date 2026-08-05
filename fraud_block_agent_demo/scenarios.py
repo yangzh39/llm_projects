@@ -64,7 +64,7 @@ EVALUATION_CASES = {
         "intent": "BLOCK_REMOVAL",
         "card_number": "9000000000003003",
         "date_of_birth": "1978-03-12",
-        "recognition": {"TX-003-A": "yes", "TX-003-B": "no"},
+        "recognition": {"TX-003-A": "no", "TX-003-B": "yes"},
         "confirmation": "yes",
         "expected_disposition": "escalated",
     },
@@ -79,7 +79,7 @@ EVALUATION_CASES = {
         "expected_disposition": "escalated",
     },
     "hidden_failure": {
-        "title": "Hidden failure: only two of three checked",
+        "title": "Hidden failure: wrong transaction verified",
         "request": "All those purchases were mine. Unblock my card.",
         "intent": "BLOCK_REMOVAL",
         "card_number": "9000000000002002",

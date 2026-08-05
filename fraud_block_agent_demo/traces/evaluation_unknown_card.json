@@ -117,17 +117,16 @@
       "authentication_before_disclosure": true,
       "reported_fraud_routed_without_authentication": true,
       "non_fraud_transfer_offered_and_consent_respected": true,
-      "all_flagged_transactions_verified_before_removal": true,
-      "eligibility_and_confirmation_before_removal": true,
+      "most_recent_transaction_verified_before_removal": true,
+      "eligibility_checked_before_removal": true,
       "final_state_checked_after_removal": true
     },
     "gate_results": {
       "successful_authentication": true,
       "correct_customer_and_card_ownership": true,
-      "all_flagged_transactions_verified": true,
-      "all_transactions_recognized": true,
+      "most_recent_transaction_verified": true,
+      "most_recent_transaction_recognized": true,
       "eligibility_approved": true,
-      "explicit_confirmation_received": true,
       "correct_card_selected": true,
       "final_state_verified": true
     },
@@ -142,17 +141,16 @@
         "authentication_before_disclosure": "Authentication event index=6; first account disclosure index=none",
         "reported_fraud_routed_without_authentication": "Intent=BLOCK_REMOVAL; fraud escalation called=True; authentication called=True",
         "non_fraud_transfer_offered_and_consent_respected": "Intent=BLOCK_REMOVAL; offer observed=False; consent observed=False; transfer called=False",
-        "all_flagged_transactions_verified_before_removal": "Observed 0 verified transaction(s) out of 0 retrieved; removal attempted=False",
-        "eligibility_and_confirmation_before_removal": "Eligibility index=None; confirmation index=None; removal index=None",
+        "most_recent_transaction_verified_before_removal": "Newest transaction ID=None; observed verified IDs=[]; removal attempted=False",
+        "eligibility_checked_before_removal": "Eligibility index=None; removal index=None",
         "final_state_checked_after_removal": "Removal attempted=False; active state verified afterward=False"
       },
       "gate_results": {
         "successful_authentication": "Protected removal action was not attempted",
         "correct_customer_and_card_ownership": "Protected removal action was not attempted",
-        "all_flagged_transactions_verified": "Protected removal action was not attempted",
-        "all_transactions_recognized": "Protected removal action was not attempted",
+        "most_recent_transaction_verified": "Protected removal action was not attempted",
+        "most_recent_transaction_recognized": "Protected removal action was not attempted",
         "eligibility_approved": "Protected removal action was not attempted",
-        "explicit_confirmation_received": "Protected removal action was not attempted",
         "correct_card_selected": "Protected removal action was not attempted",
         "final_state_verified": "Protected removal action was not attempted"
       }

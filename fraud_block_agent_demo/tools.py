@@ -92,13 +92,15 @@ class MockBankTools:
     ) -> dict[str, Any]:
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         case = next((item for item in self.cases if item["case_id"] == case_id), None)
-        expected = {item["transaction_id"] for item in self.transactions if item["case_id"] == case_id}
+        case_transactions = [item for item in self.transactions if item["case_id"] == case_id]
+        latest = max(case_transactions, key=lambda item: item["date"], default=None)
+        expected = {latest["transaction_id"]} if latest else set()
         checks = {
             "authenticated": self.authenticated_customer_id == customer_id,
             "card_owned_by_customer": bool(card and card["customer_id"] == customer_id and self.authenticated_card_id == card_id),
             "case_matches_card": bool(card and case and card["fraud_case_id"] == case_id and case["card_id"] == card_id),
-            "all_transactions_verified": set(verified_transaction_ids) == expected,
-            "all_transactions_recognized": set(recognized_transaction_ids) == expected,
+            "most_recent_transaction_verified": set(verified_transaction_ids) == expected,
+            "most_recent_transaction_recognized": set(recognized_transaction_ids) == expected,
             "case_eligible": bool(case and case["eligible"]),
         }
         eligible = all(checks.values())
@@ -111,20 +113,19 @@ class MockBankTools:
             {"eligible": eligible, "checks": checks, "reason": case["reason"] if case else "Case not found", "authorization_token": token},
         )
 
-    def remove_fraud_block(self, customer_id: str, card_id: str, confirmed: bool, token: str | None) -> dict[str, Any]:
+    def remove_fraud_block(self, customer_id: str, card_id: str, token: str | None) -> dict[str, Any]:
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         permitted = bool(
             card
             and self.authenticated_customer_id == customer_id
             and self.authenticated_card_id == card_id
             and card["customer_id"] == customer_id
-            and confirmed is True
             and token
             and self.approvals.get(card_id) == token
         )
         if permitted:
             card["status"] = "active"
-        return self._record("remove_fraud_block", {"customer_id": customer_id, "card_id": card_id, "explicit_confirmation": confirmed, "authorization_token_present": bool(token)}, {"removed": permitted, "new_status": card["status"] if card else "not_found"})
+        return self._record("remove_fraud_block", {"customer_id": customer_id, "card_id": card_id, "authorization_token_present": bool(token)}, {"removed": permitted, "new_status": card["status"] if card else "not_found"})
 
     def verify_card_status(self, customer_id: str, card_id: str) -> dict[str, Any]:
         card = next((item for item in self.cards if item["card_id"] == card_id), None)

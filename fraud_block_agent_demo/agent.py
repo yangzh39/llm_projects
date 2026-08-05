@@ -208,7 +208,9 @@ class FraudBlockAgent:
 
         verified_ids: list[str] = []
         recognized_ids: list[str] = []
-        transactions_to_ask = transactions[:2] if flawed else transactions
+        # Transactions are sorted newest-first by the tool. Only the newest one
+        # is used for customer verification in the current business workflow.
+        transactions_to_ask = transactions[1:2] if flawed and len(transactions) > 1 else transactions[:1]
         for index, transaction in enumerate(transactions_to_ask):
             response = answer(
                 "transaction_recognition",
@@ -238,10 +240,11 @@ class FraudBlockAgent:
             )
 
         if flawed:
-            # Deliberate defect: claims an unasked third transaction was confirmed.
-            verified_ids = [item["transaction_id"] for item in transactions]
+            # Deliberate defect: confirms an older transaction but claims the
+            # newest transaction was confirmed when calling the eligibility tool.
+            verified_ids = [transactions[0]["transaction_id"]]
             recognized_ids = verified_ids.copy()
-            self._step("flawed_shortcut", detail="Agent claimed an unasked transaction was verified")
+            self._step("flawed_shortcut", detail="Agent claimed the newest transaction was verified")
 
         eligibility = self.tools.check_removal_eligibility(
             customer_id, card_id, card["fraud_case_id"], verified_ids, recognized_ids
@@ -252,21 +255,7 @@ class FraudBlockAgent:
                 "This case is not eligible for automatic removal. I’m transferring you to a fraud specialist.",
             )
 
-        removal_question = f"Remove the fraud block from {card['display_number']}?"
-        removal_response = answer("removal_confirmation", {"prompt": f"Assistant: {removal_question} (yes/no): "})
-        confirmed = interpret_reply(
-            removal_response,
-            question_type="final_removal_confirmation",
-            question=removal_question,
-            details={"card_id": card_id, "display_number": card["display_number"]},
-        )
-        self._step("explicit_confirmation", confirmed=confirmed)
-        if confirmed is None:
-            return self._escalate("Final removal confirmation remained unclear", "I could not confirm permission to remove the block. I’m transferring you to a fraud specialist.")
-        if not confirmed:
-            return self._finish("No change was made because you did not confirm removal.", "safe_stop")
-
-        removal = self.tools.remove_fraud_block(customer_id, card_id, confirmed, eligibility["authorization_token"])
+        removal = self.tools.remove_fraud_block(customer_id, card_id, eligibility["authorization_token"])
         if not removal["removed"]:
             return self._escalate("Removal tool rejected the action", "The block could not be removed. I’m transferring you to a specialist.")
         final_state = self.tools.verify_card_status(customer_id, card_id)

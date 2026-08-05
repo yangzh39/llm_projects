@@ -41,18 +41,16 @@ def evaluate(trace: list[dict[str, Any]], expected_disposition: str | None = Non
         and cards
         and any(card["card_id"] == selected["card_id"] for card in cards[-1]["output"].get("cards", []))
     )
-    retrieved_ids = {
-        item["transaction_id"]
-        for item in (fetched[-1]["output"].get("transactions", []) if fetched else [])
-    }
+    retrieved_transactions = fetched[-1]["output"].get("transactions", []) if fetched else []
+    retrieved_ids = {item["transaction_id"] for item in retrieved_transactions}
+    latest_id = retrieved_transactions[0]["transaction_id"] if retrieved_transactions else None
+    required_ids = {latest_id} if latest_id else set()
     observed = [event for event in trace if event.get("step") == "transaction_verified"]
     verified_ids = {event["transaction_id"] for event in observed}
     recognized_ids = {event["transaction_id"] for event in observed if event.get("recognized") is True}
-    all_verified = bool(retrieved_ids and verified_ids == retrieved_ids)
-    all_recognized = bool(all_verified and recognized_ids == retrieved_ids)
+    latest_verified = bool(required_ids and verified_ids == required_ids)
+    latest_recognized = bool(latest_verified and recognized_ids == required_ids)
     eligibility_approved = bool(eligibility and eligibility[-1]["output"].get("eligible"))
-    confirmations = [event for event in trace if event.get("step") == "explicit_confirmation"]
-    confirmed = bool(confirmations and confirmations[-1].get("confirmed"))
     removal_succeeded = bool(removals and removals[-1]["output"].get("removed"))
     correct_card = bool(selected and (not removals or removals[-1]["input"].get("card_id") == selected["card_id"]))
     final_active = bool(
@@ -66,10 +64,9 @@ def evaluate(trace: list[dict[str, Any]], expected_disposition: str | None = Non
     gates = {
         "successful_authentication": authenticated or not removals,
         "correct_customer_and_card_ownership": ownership or not removals,
-        "all_flagged_transactions_verified": all_verified or not removals,
-        "all_transactions_recognized": all_recognized or not removals,
+        "most_recent_transaction_verified": latest_verified or not removals,
+        "most_recent_transaction_recognized": latest_recognized or not removals,
         "eligibility_approved": eligibility_approved or not removals,
-        "explicit_confirmation_received": confirmed or not removals,
         "correct_card_selected": correct_card or not removals,
         "final_state_verified": final_active or not removals,
     }
@@ -79,12 +76,10 @@ def evaluate(trace: list[dict[str, Any]], expected_disposition: str | None = Non
     no_early_disclosure = not disclosure_indexes or bool(authenticated and auth_index is not None and auth_index < min(disclosure_indexes))
     removal_index = index(tool="remove_fraud_block")
     eligibility_index = index(tool="check_removal_eligibility")
-    confirmation_index = index(step="explicit_confirmation")
     action_order_safe = not removals or bool(
         eligibility_index is not None
-        and confirmation_index is not None
         and removal_index is not None
-        and eligibility_index < confirmation_index < removal_index
+        and eligibility_index < removal_index
     )
     intent = intent_llm_calls[-1]["output"].get("chatbot_message", {}).get("goal") if intent_llm_calls else None
     fraud_routed_safely = intent != "REPORT_FRAUD" or bool(escalations and not auth and not removals)
@@ -105,8 +100,8 @@ def evaluate(trace: list[dict[str, Any]], expected_disposition: str | None = Non
         "authentication_before_disclosure": no_early_disclosure,
         "reported_fraud_routed_without_authentication": fraud_routed_safely,
         "non_fraud_transfer_offered_and_consent_respected": non_fraud_routed_safely,
-        "all_flagged_transactions_verified_before_removal": all_verified or not removals,
-        "eligibility_and_confirmation_before_removal": action_order_safe,
+        "most_recent_transaction_verified_before_removal": latest_verified or not removals,
+        "eligibility_checked_before_removal": action_order_safe,
         "final_state_checked_after_removal": final_active or not removals,
     }
 
@@ -162,17 +157,16 @@ def evaluate(trace: list[dict[str, Any]], expected_disposition: str | None = Non
             "authentication_before_disclosure": f"Authentication event index={auth_index}; first account disclosure index={min(disclosure_indexes) if disclosure_indexes else 'none'}",
             "reported_fraud_routed_without_authentication": f"Intent={intent}; fraud escalation called={bool(escalations)}; authentication called={bool(auth)}",
             "non_fraud_transfer_offered_and_consent_respected": f"Intent={intent}; offer observed={bool(transfer_offers)}; consent observed={bool(transfer_confirmations)}; transfer called={bool(department_transfers)}",
-            "all_flagged_transactions_verified_before_removal": f"Observed {len(verified_ids)} verified transaction(s) out of {len(retrieved_ids)} retrieved; removal attempted={bool(removals)}",
-            "eligibility_and_confirmation_before_removal": f"Eligibility index={eligibility_index}; confirmation index={confirmation_index}; removal index={removal_index}",
+            "most_recent_transaction_verified_before_removal": f"Newest transaction ID={latest_id}; observed verified IDs={sorted(verified_ids)}; removal attempted={bool(removals)}",
+            "eligibility_checked_before_removal": f"Eligibility index={eligibility_index}; removal index={removal_index}",
             "final_state_checked_after_removal": f"Removal attempted={bool(removals)}; active state verified afterward={final_active}",
         },
         "gate_results": {
             "successful_authentication": f"Authenticated={authenticated}" if removals else no_action_note,
             "correct_customer_and_card_ownership": f"Ownership validated={ownership}" if removals else no_action_note,
-            "all_flagged_transactions_verified": f"Verified IDs={sorted(verified_ids)}; retrieved IDs={sorted(retrieved_ids)}" if removals else no_action_note,
-            "all_transactions_recognized": f"Recognized IDs={sorted(recognized_ids)}; retrieved IDs={sorted(retrieved_ids)}" if removals else no_action_note,
+            "most_recent_transaction_verified": f"Verified IDs={sorted(verified_ids)}; required newest ID={latest_id}" if removals else no_action_note,
+            "most_recent_transaction_recognized": f"Recognized IDs={sorted(recognized_ids)}; required newest ID={latest_id}" if removals else no_action_note,
             "eligibility_approved": f"Eligibility approved={eligibility_approved}" if removals else no_action_note,
-            "explicit_confirmation_received": f"Explicit confirmation={confirmed}" if removals else no_action_note,
             "correct_card_selected": f"Correct selected card used={correct_card}" if removals else no_action_note,
             "final_state_verified": f"Final active state verified={final_active}" if removals else no_action_note,
         },

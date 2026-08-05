@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from getpass import getpass
 from pathlib import Path
 from typing import Any
 
@@ -16,8 +15,6 @@ ROOT = Path(__file__).resolve().parent
 
 
 def interactive_answer(_kind: str, context: dict[str, Any]) -> str:
-    if _kind in {"card_number", "date_of_birth"}:
-        return getpass(context["prompt"])
     return input(context["prompt"])
 
 
