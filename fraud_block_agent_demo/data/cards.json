@@ -1,0 +1,12 @@
+[
+  {"card_id": "CARD-001", "customer_id": "CUST-001", "card_number": "9000000000001001", "last_four": "1001", "status": "fraud_blocked", "fraud_case_id": "CASE-001"},
+  {"card_id": "CARD-002", "customer_id": "CUST-002", "card_number": "9000000000002002", "last_four": "2002", "status": "fraud_blocked", "fraud_case_id": "CASE-002"},
+  {"card_id": "CARD-003", "customer_id": "CUST-003", "card_number": "9000000000003003", "last_four": "3003", "status": "fraud_blocked", "fraud_case_id": "CASE-003"},
+  {"card_id": "CARD-004", "customer_id": "CUST-004", "card_number": "9000000000004004", "last_four": "4004", "status": "fraud_blocked", "fraud_case_id": "CASE-004"},
+  {"card_id": "CARD-005", "customer_id": "CUST-005", "card_number": "9000000000005005", "last_four": "5005", "status": "active", "fraud_case_id": null},
+  {"card_id": "CARD-006", "customer_id": "CUST-006", "card_number": "9000000000006006", "last_four": "6006", "status": "fraud_blocked", "fraud_case_id": "CASE-006"},
+  {"card_id": "CARD-007", "customer_id": "CUST-007", "card_number": "9000000000007007", "last_four": "7007", "status": "fraud_blocked", "fraud_case_id": "CASE-007"},
+  {"card_id": "CARD-008", "customer_id": "CUST-008", "card_number": "9000000000008008", "last_four": "8008", "status": "fraud_blocked", "fraud_case_id": "CASE-008"},
+  {"card_id": "CARD-009", "customer_id": "CUST-009", "card_number": "9000000000009009", "last_four": "9009", "status": "fraud_blocked", "fraud_case_id": "CASE-009"},
+  {"card_id": "CARD-010", "customer_id": "CUST-010", "card_number": "9000000000010010", "last_four": "0010", "status": "fraud_blocked", "fraud_case_id": "CASE-010"}
+]

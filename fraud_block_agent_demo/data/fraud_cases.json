@@ -1,0 +1,11 @@
+[
+  {"case_id": "CASE-001", "card_id": "CARD-001", "eligible": true, "reason": "Standard verification allowed"},
+  {"case_id": "CASE-002", "card_id": "CARD-002", "eligible": true, "reason": "Standard verification allowed"},
+  {"case_id": "CASE-003", "card_id": "CARD-003", "eligible": true, "reason": "Standard verification allowed"},
+  {"case_id": "CASE-004", "card_id": "CARD-004", "eligible": false, "reason": "High-value case requires specialist review"},
+  {"case_id": "CASE-006", "card_id": "CARD-006", "eligible": false, "reason": "Repeated alerts require specialist review"},
+  {"case_id": "CASE-007", "card_id": "CARD-007", "eligible": true, "reason": "Standard verification allowed"},
+  {"case_id": "CASE-008", "card_id": "CARD-008", "eligible": true, "reason": "Standard verification allowed"},
+  {"case_id": "CASE-009", "card_id": "CARD-009", "eligible": false, "reason": "Card replacement already pending"},
+  {"case_id": "CASE-010", "card_id": "CARD-010", "eligible": true, "reason": "Standard verification allowed"}
+]

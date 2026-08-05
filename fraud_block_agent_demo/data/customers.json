@@ -1,0 +1,12 @@
+[
+  {"customer_id": "CUST-001", "name": "Avery Example", "date_of_birth": "1990-01-15"},
+  {"customer_id": "CUST-002", "name": "Jordan Sample", "date_of_birth": "1985-02-20"},
+  {"customer_id": "CUST-003", "name": "Morgan Demo", "date_of_birth": "1978-03-12"},
+  {"customer_id": "CUST-004", "name": "Taylor Training", "date_of_birth": "1992-04-08"},
+  {"customer_id": "CUST-005", "name": "Riley Placeholder", "date_of_birth": "1988-05-30"},
+  {"customer_id": "CUST-006", "name": "Casey Fiction", "date_of_birth": "1975-06-17"},
+  {"customer_id": "CUST-007", "name": "Jamie Sandbox", "date_of_birth": "1995-07-22"},
+  {"customer_id": "CUST-008", "name": "Drew Practice", "date_of_birth": "1982-08-11"},
+  {"customer_id": "CUST-009", "name": "Quinn Tutorial", "date_of_birth": "1998-09-09"},
+  {"customer_id": "CUST-010", "name": "Skyler Example", "date_of_birth": "1991-10-26"}
+]

@@ -1,0 +1,15 @@
+[
+  {"transaction_id": "TX-001-A", "case_id": "CASE-001", "date": "2026-07-30", "merchant": "Example Grocery", "amount": 42.18},
+  {"transaction_id": "TX-002-A", "case_id": "CASE-002", "date": "2026-07-31", "merchant": "Demo Fuel Station", "amount": 61.05},
+  {"transaction_id": "TX-002-B", "case_id": "CASE-002", "date": "2026-07-29", "merchant": "Sample Bookshop", "amount": 27.99},
+  {"transaction_id": "TX-002-C", "case_id": "CASE-002", "date": "2026-07-28", "merchant": "Training Cafe", "amount": 12.4},
+  {"transaction_id": "TX-003-A", "case_id": "CASE-003", "date": "2026-08-01", "merchant": "Mock Travel", "amount": 315.0},
+  {"transaction_id": "TX-003-B", "case_id": "CASE-003", "date": "2026-07-30", "merchant": "Example Hotel", "amount": 188.5},
+  {"transaction_id": "TX-004-A", "case_id": "CASE-004", "date": "2026-08-02", "merchant": "Training Electronics", "amount": 899.0},
+  {"transaction_id": "TX-006-A", "case_id": "CASE-006", "date": "2026-07-27", "merchant": "Demo Marketplace", "amount": 74.25},
+  {"transaction_id": "TX-007-A", "case_id": "CASE-007", "date": "2026-08-03", "merchant": "Sample Pharmacy", "amount": 23.67},
+  {"transaction_id": "TX-008-A", "case_id": "CASE-008", "date": "2026-07-26", "merchant": "Practice Hardware", "amount": 112.16},
+  {"transaction_id": "TX-008-B", "case_id": "CASE-008", "date": "2026-07-25", "merchant": "Example Bakery", "amount": 18.75},
+  {"transaction_id": "TX-009-A", "case_id": "CASE-009", "date": "2026-08-01", "merchant": "Tutorial Clothing", "amount": 156.2},
+  {"transaction_id": "TX-010-A", "case_id": "CASE-010", "date": "2026-08-02", "merchant": "Sandbox Restaurant", "amount": 83.41}
+]
