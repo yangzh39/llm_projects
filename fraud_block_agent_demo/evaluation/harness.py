@@ -128,11 +128,11 @@ def run_scenario(
     initial_state = _card_state(agent)
     answers = ScenarioAnswers(scenario)
     if live:
-        from deepseek_intent import ApiCallBudget, classify_with_deepseek, interpret_response_with_deepseek
+        from deepseek_intent import ApiCallBudget, classify_with_model, interpret_response_with_model
 
         budget = ApiCallBudget(maximum_calls=10)
-        classifier = partial(classify_with_deepseek, budget=budget)
-        interpreter = partial(interpret_response_with_deepseek, budget=budget)
+        classifier = partial(classify_with_model, budget=budget)
+        interpreter = partial(interpret_response_with_model, budget=budget)
     else:
         recorded = RecordedModels(scenario)
         classifier = recorded.classify

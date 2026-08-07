@@ -11,7 +11,7 @@ from typing import Any
 import streamlit as st
 
 from agent import FraudBlockAgent
-from deepseek_intent import classify_with_deepseek, interpret_response_with_deepseek
+from deepseek_intent import classify_with_model, interpret_response_with_model
 from evaluator import evaluate
 from reporting import save_trace
 
@@ -56,8 +56,8 @@ class AgentSession:
             agent = FraudBlockAgent(ROOT / "data")
             result = agent.run(
                 request,
-                classify_with_deepseek,
-                interpret_response_with_deepseek,
+                classify_with_model,
+                interpret_response_with_model,
                 self._ask,
                 self._present,
             )

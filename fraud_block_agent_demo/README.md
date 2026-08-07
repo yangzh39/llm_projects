@@ -13,13 +13,29 @@ conda activate llm
 pip install -r requirements.txt
 ```
 
-For interactive exploration, add your DeepSeek key to the existing root `.env` file:
+Copy the example configuration and select a model provider:
+
+```bash
+cp fraud_block_agent_demo/.env.example .env
+```
+
+The simplest DeepSeek configuration is:
 
 ```text
 DEEPSEEK_API_KEY=your_key_here
 ```
 
-Optional variables are `DEEPSEEK_BASE_URL` and `DEEPSEEK_MODEL`. Credentials are never written to a trace.
+The model layer also supports OpenAI, Anthropic, and custom OpenAI-compatible endpoints through provider-neutral settings:
+
+```text
+LLM_PROVIDER=openai
+LLM_API_KEY=your_key_here
+LLM_MODEL=your-model-name
+```
+
+For a custom endpoint, set `LLM_PROVIDER=custom`, `LLM_BASE_URL`, `LLM_MODEL`, and optionally `LLM_API_STYLE=openai|anthropic`. Custom local endpoints may omit `LLM_API_KEY`. Set `LLM_USE_JSON_MODE=false` if an OpenAI-compatible endpoint does not implement `response_format`.
+
+Generic `LLM_*` settings take precedence. The legacy `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, and `DEEPSEEK_MODEL` variables remain supported, so existing local DeepSeek setups continue to run unchanged. Credentials are never written to a trace.
 
 ## Run 1: interactive exploration
 
@@ -43,14 +59,14 @@ python -m streamlit run fraud_block_agent_demo/chat_ui.py
 
 Using `python -m streamlit` avoids accidentally running a Streamlit executable from another Conda or virtual environment.
 
-Enter any opening customer message. On every model turn, DeepSeek returns two separate messages:
+Enter any opening customer message. On every model turn, the configured model returns two separate messages:
 
 - `human_message`: a natural response or dynamically generated clarification question for the customer.
 - `chatbot_message`: hidden JSON instructions for the orchestrator or a future specialist subagent, including the goal, service, department, collected facts, and next action. This is retained internally but not displayed to the customer.
 
-If clarification is needed, the customer's reply and conversation context go back to DeepSeek. The agent allows at most three model turns before transferring to a fraud specialist. The Python orchestrator validates the JSON action before doing anything.
+If clarification is needed, the customer's reply and conversation context go back to the configured model. The agent allows at most three model turns before transferring to a fraud specialist. The Python orchestrator validates the JSON action before doing anything.
 
-Every conversational response is also interpreted by DeepSeek rather than matched against a hard-coded list. This includes routing confirmation, transfer consent, and recognition of the newest transaction. Full card numbers and DOBs are the deliberate exception: they are treated as private form fields and sent only to deterministic local authentication tools, never to the model API.
+Every conversational response is also interpreted by the configured model rather than matched against a hard-coded list. This includes routing confirmation, transfer consent, and recognition of the newest transaction. Full card numbers and DOBs are the deliberate exception: they are treated as private form fields and sent only to deterministic local authentication tools, never to the model API.
 
 - `BLOCK_REMOVAL` continues to authentication.
 - `REPORT_FRAUD` transfers directly to a mock fraud specialist and stops.
@@ -101,7 +117,7 @@ Run one deterministic case with:
 python3 fraud_block_agent_demo/run_evaluation.py --scenario successful_block_removal
 ```
 
-Run exactly one bounded live DeepSeek session with:
+Run exactly one bounded live model session with:
 
 ```bash
 python3 fraud_block_agent_demo/run_evaluation.py --scenario successful_block_removal --live
@@ -113,7 +129,7 @@ Live mode requires an explicit scenario and enforces a hard maximum of 10 API ca
 
 1. **Deterministic code checks** compare objective state and actions with scenario expectations. They answer questions such as: Was the correct card selected? Did the block-removal tool succeed? Is the final card state active?
 2. **Trace-based checks** independently inspect the process. A correct final state can still fail if authentication, recognition, eligibility, or final verification occurred in the wrong order or was skipped.
-3. **Operational metrics** measure API and tool usage. Recorded-model benchmark runs report token usage and cost as `None`; live runs use usage metadata returned by DeepSeek when available.
+3. **Operational metrics** measure API and tool usage. Recorded-model benchmark runs report token usage and cost as `None`; live runs use usage metadata returned by the configured provider when available.
 4. **Validation-set execution** runs ten reusable scenarios covering success, clarification, routing, authentication failures, transaction rejection, ineligibility, and a hidden workflow failure.
 
 ### Token and API-cost calculation
@@ -128,7 +144,7 @@ cache-hit input tokens × cache-hit input rate
 + output tokens × output rate
 ```
 
-When the API does not provide the required usage metadata or the configured model has no matching price, the estimate is `None` rather than inferred.
+When the API does not provide the required usage metadata or the configured model has no matching price, the estimate is `None` rather than inferred. The bundled pricing table currently contains DeepSeek models only; other providers still report tokens, calls, and latency but require a pricing entry before cost can be calculated.
 
 ### Validation scenarios
 
@@ -193,10 +209,10 @@ Use an incorrect DOB with any card to demonstrate authentication failure. Full c
 
 ```text
 fraud_block_agent_demo/
-├── explore.py                 # interactive, up to three DeepSeek intent calls
+├── explore.py                 # interactive, up to three model intent calls
 ├── chat_ui.py                 # optional Streamlit browser chat
 ├── run_evaluation.py          # deterministic, API-free evaluation runner
-├── deepseek_intent.py         # bounded intent classifier
+├── deepseek_intent.py         # provider-configurable bounded model client
 ├── agent.py                   # workflow orchestration
 ├── tools.py                   # deterministic mock banking operations
 ├── evaluator.py               # independent trace evaluation

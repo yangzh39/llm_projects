@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from agent import FraudBlockAgent
-from deepseek_intent import classify_with_deepseek, interpret_response_with_deepseek
+from deepseek_intent import classify_with_model, interpret_response_with_model
 from evaluator import evaluate
 from reporting import save_trace
 
@@ -34,8 +34,8 @@ def main() -> None:
     try:
         result = agent.run(
             request,
-            classify_with_deepseek,
-            interpret_response_with_deepseek,
+            classify_with_model,
+            interpret_response_with_model,
             interactive_answer,
             display_llm_output,
         )

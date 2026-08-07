@@ -1,9 +1,15 @@
-"""The demo's single DeepSeek call: classify the opening customer message."""
+"""Provider-configurable language-model calls for conversational routing.
+
+The historical DeepSeek environment variables remain supported so existing
+local setups continue to work. Shared users can instead configure the generic
+``LLM_*`` variables documented in ``.env.example``.
+"""
 
 from __future__ import annotations
 
 import json
 import os
+from dataclasses import dataclass
 from time import perf_counter
 from typing import Any
 
@@ -79,59 +85,172 @@ class ApiCallBudget:
         self.calls_used += 1
 
 
-def _call_deepseek(system_prompt: str, message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
-    import requests
-    from dotenv import load_dotenv
+@dataclass(frozen=True)
+class ModelConfig:
+    provider: str
+    api_style: str
+    api_key: str
+    base_url: str
+    model: str
+    use_json_mode: bool
 
-    load_dotenv()
-    api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
-    base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
-    model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat").strip()
-    if not api_key:
-        raise RuntimeError("DEEPSEEK_API_KEY is missing. Add it to the repo's existing .env file.")
+
+def _as_bool(value: str, default: bool) -> bool:
+    if not value:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def load_model_config() -> ModelConfig:
+    """Load generic model settings, falling back to the existing DeepSeek setup."""
+    try:
+        from dotenv import load_dotenv
+    except ModuleNotFoundError:
+        # Exported environment variables still work without python-dotenv.
+        pass
+    else:
+        load_dotenv()
+
+    provider = os.getenv("LLM_PROVIDER", "deepseek").strip().lower()
+    presets = {
+        "deepseek": ("openai", "https://api.deepseek.com", "deepseek-chat", "DEEPSEEK_API_KEY"),
+        "openai": ("openai", "https://api.openai.com", "", "OPENAI_API_KEY"),
+        "anthropic": ("anthropic", "https://api.anthropic.com", "", "ANTHROPIC_API_KEY"),
+        "custom": ("openai", "", "", ""),
+    }
+    if provider not in presets:
+        raise RuntimeError("LLM_PROVIDER must be deepseek, openai, anthropic, or custom.")
+
+    default_style, default_base, default_model, provider_key_name = presets[provider]
+    api_style = os.getenv("LLM_API_STYLE", default_style).strip().lower()
+    if api_style not in {"openai", "anthropic"}:
+        raise RuntimeError("LLM_API_STYLE must be openai or anthropic.")
+
+    legacy_base = os.getenv("DEEPSEEK_BASE_URL", "") if provider == "deepseek" else ""
+    legacy_model = os.getenv("DEEPSEEK_MODEL", "") if provider == "deepseek" else ""
+    base_url = (os.getenv("LLM_BASE_URL", "").strip() or legacy_base or default_base).rstrip("/")
+    model = os.getenv("LLM_MODEL", "").strip() or legacy_model or default_model
+    api_key = os.getenv("LLM_API_KEY", "").strip()
+    if not api_key and provider_key_name:
+        api_key = os.getenv(provider_key_name, "").strip()
+
+    if not base_url:
+        raise RuntimeError("LLM_BASE_URL is required for a custom provider.")
+    if not model:
+        raise RuntimeError("LLM_MODEL is required for the selected provider.")
+    if not api_key and provider != "custom":
+        raise RuntimeError(f"No API key is configured for the {provider} provider.")
+
+    return ModelConfig(
+        provider=provider,
+        api_style=api_style,
+        api_key=api_key,
+        base_url=base_url,
+        model=model,
+        use_json_mode=_as_bool(os.getenv("LLM_USE_JSON_MODE", ""), api_style == "openai"),
+    )
+
+
+def _openai_endpoint(base_url: str) -> str:
+    if base_url.endswith("/chat/completions"):
+        return base_url
+    if base_url.endswith("/v1"):
+        return f"{base_url}/chat/completions"
+    return f"{base_url}/v1/chat/completions"
+
+
+def _anthropic_endpoint(base_url: str) -> str:
+    if base_url.endswith("/messages"):
+        return base_url
+    if base_url.endswith("/v1"):
+        return f"{base_url}/messages"
+    return f"{base_url}/v1/messages"
+
+
+def _call_model(system_prompt: str, message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
+    import requests
+
+    config = load_model_config()
 
     if budget:
         budget.consume()
     started_at = perf_counter()
-    response = requests.post(
-        f"{base_url}/v1/chat/completions",
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        json={
-            "model": model,
+    if config.api_style == "anthropic":
+        response = requests.post(
+            _anthropic_endpoint(config.base_url),
+            headers={
+                "x-api-key": config.api_key,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": config.model,
+                "max_tokens": 1200,
+                "temperature": 0,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": message}],
+            },
+            timeout=60,
+        )
+    else:
+        headers = {"Content-Type": "application/json"}
+        if config.api_key:
+            headers["Authorization"] = f"Bearer {config.api_key}"
+        request_body: dict[str, Any] = {
+            "model": config.model,
             "temperature": 0,
-            "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": message},
             ],
-        },
-        timeout=60,
-    )
+        }
+        if config.use_json_mode:
+            request_body["response_format"] = {"type": "json_object"}
+        response = requests.post(
+            _openai_endpoint(config.base_url),
+            headers=headers,
+            json=request_body,
+            timeout=60,
+        )
     response.raise_for_status()
     payload = response.json()
-    result = json.loads(payload["choices"][0]["message"]["content"].strip())
-    usage = payload.get("usage")
+    if config.api_style == "anthropic":
+        content = "".join(block.get("text", "") for block in payload.get("content", []) if block.get("type") == "text")
+        raw_usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else None
+        usage = None
+        if raw_usage:
+            usage = {
+                **raw_usage,
+                "prompt_tokens": raw_usage.get("input_tokens"),
+                "completion_tokens": raw_usage.get("output_tokens"),
+                "total_tokens": (raw_usage.get("input_tokens") or 0) + (raw_usage.get("output_tokens") or 0),
+            }
+    else:
+        content = payload["choices"][0]["message"]["content"]
+        usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else None
+    result = json.loads(content.strip())
     result["_api_metrics"] = {
-        "model": payload.get("model", model),
-        "usage": usage if isinstance(usage, dict) else None,
+        "provider": config.provider,
+        "model": payload.get("model", config.model),
+        "usage": usage,
         "latency_ms": (perf_counter() - started_at) * 1000,
     }
     return result
 
 
-def classify_with_deepseek(message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
-    result = _call_deepseek(SYSTEM_PROMPT, message, budget)
+def classify_with_model(message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
+    result = _call_model(SYSTEM_PROMPT, message, budget)
     chatbot_message = result.get("chatbot_message", {})
     if not isinstance(result.get("human_message"), str) or not result["human_message"].strip():
-        raise RuntimeError("DeepSeek did not return a customer-facing human_message.")
+        raise RuntimeError("The configured model did not return a customer-facing human_message.")
     if chatbot_message.get("goal") not in ALLOWED_GOALS:
-        raise RuntimeError("DeepSeek returned an unsupported goal.")
+        raise RuntimeError("The configured model returned an unsupported goal.")
     if chatbot_message.get("next_action") not in ALLOWED_ACTIONS:
-        raise RuntimeError("DeepSeek returned an unsupported next_action.")
+        raise RuntimeError("The configured model returned an unsupported next_action.")
     return result
 
 
-def interpret_response_with_deepseek(
+def interpret_response_with_model(
     message: str,
     context: dict[str, Any],
     budget: ApiCallBudget | None = None,
@@ -142,14 +261,14 @@ def interpret_response_with_deepseek(
         f"Relevant workflow context: {json.dumps(context.get('details', {}))}\n"
         f"Customer response: {message}"
     )
-    result = _call_deepseek(RESPONSE_SYSTEM_PROMPT, prompt, budget)
+    result = _call_model(RESPONSE_SYSTEM_PROMPT, prompt, budget)
     chatbot_message = result.get("chatbot_message", {})
     if not isinstance(result.get("human_message"), str) or not result["human_message"].strip():
-        raise RuntimeError("DeepSeek did not return a response acknowledgement.")
+        raise RuntimeError("The configured model did not return a response acknowledgement.")
     if chatbot_message.get("response_meaning") not in ALLOWED_RESPONSE_MEANINGS:
-        raise RuntimeError("DeepSeek returned an unsupported response meaning.")
+        raise RuntimeError("The configured model returned an unsupported response meaning.")
     if chatbot_message.get("next_action") not in ALLOWED_RESPONSE_ACTIONS:
-        raise RuntimeError("DeepSeek returned an unsupported response action.")
+        raise RuntimeError("The configured model returned an unsupported response action.")
     valid_pair = {
         "AFFIRMATIVE": "CONTINUE",
         "NEGATIVE": "STOP",
@@ -158,5 +277,10 @@ def interpret_response_with_deepseek(
         "UNCLEAR": "ASK_CLARIFICATION",
     }
     if valid_pair[chatbot_message["response_meaning"]] != chatbot_message["next_action"]:
-        raise RuntimeError("DeepSeek returned inconsistent response instructions.")
+        raise RuntimeError("The configured model returned inconsistent response instructions.")
     return result
+
+
+# Backward-compatible names for existing notebooks or imports.
+classify_with_deepseek = classify_with_model
+interpret_response_with_deepseek = interpret_response_with_model

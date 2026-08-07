@@ -3,7 +3,7 @@
   "events": [
     {
       "sequence": 1,
-      "timestamp": "2026-08-06T07:49:13.414308+00:00",
+      "timestamp": "2026-08-07T00:46:47.110096+00:00",
       "event_type": "customer_message",
       "name": "customer_message_received",
       "status": "success",
@@ -16,7 +16,7 @@
     },
     {
       "sequence": 2,
-      "timestamp": "2026-08-06T07:49:13.414331+00:00",
+      "timestamp": "2026-08-07T00:46:47.110118+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_started",
       "status": "started",
@@ -30,7 +30,7 @@
     },
     {
       "sequence": 3,
-      "timestamp": "2026-08-06T07:49:13.414352+00:00",
+      "timestamp": "2026-08-07T00:46:47.110141+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_completed",
       "status": "success",
@@ -59,7 +59,7 @@
     },
     {
       "sequence": 4,
-      "timestamp": "2026-08-06T07:49:13.414386+00:00",
+      "timestamp": "2026-08-07T00:46:47.110179+00:00",
       "event_type": "workflow_step",
       "name": "intent_interpreted",
       "status": "success",
@@ -80,7 +80,7 @@
     },
     {
       "sequence": 5,
-      "timestamp": "2026-08-06T07:49:13.414404+00:00",
+      "timestamp": "2026-08-07T00:46:47.110200+00:00",
       "event_type": "workflow_step",
       "name": "route_selected",
       "status": "success",
@@ -99,7 +99,7 @@
     },
     {
       "sequence": 6,
-      "timestamp": "2026-08-06T07:49:13.414421+00:00",
+      "timestamp": "2026-08-07T00:46:47.110220+00:00",
       "event_type": "workflow_step",
       "name": "specialist_transfer_triggered",
       "status": "success",
@@ -116,7 +116,7 @@
     },
     {
       "sequence": 7,
-      "timestamp": "2026-08-06T07:49:13.414438+00:00",
+      "timestamp": "2026-08-07T00:46:47.110237+00:00",
       "event_type": "tool_call",
       "name": "escalate_to_human",
       "status": "success",
@@ -133,7 +133,7 @@
     },
     {
       "sequence": 8,
-      "timestamp": "2026-08-06T07:49:13.414450+00:00",
+      "timestamp": "2026-08-07T00:46:47.110252+00:00",
       "event_type": "final_response",
       "name": "final_response",
       "status": "success",

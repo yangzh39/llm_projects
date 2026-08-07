@@ -3,7 +3,7 @@
   "events": [
     {
       "sequence": 1,
-      "timestamp": "2026-08-06T07:49:13.416621+00:00",
+      "timestamp": "2026-08-07T00:46:47.111849+00:00",
       "event_type": "customer_message",
       "name": "customer_message_received",
       "status": "success",
@@ -16,7 +16,7 @@
     },
     {
       "sequence": 2,
-      "timestamp": "2026-08-06T07:49:13.416650+00:00",
+      "timestamp": "2026-08-07T00:46:47.111871+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_started",
       "status": "started",
@@ -30,7 +30,7 @@
     },
     {
       "sequence": 3,
-      "timestamp": "2026-08-06T07:49:13.416671+00:00",
+      "timestamp": "2026-08-07T00:46:47.111891+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_completed",
       "status": "success",
@@ -51,7 +51,7 @@
           "reason": "Recorded result for reproducible evaluation"
         }
       },
-      "duration_ms": 0.008,
+      "duration_ms": 0.007,
       "type": "llm_call",
       "purpose": "intent_classification",
       "attempt": 1,
@@ -59,7 +59,7 @@
     },
     {
       "sequence": 4,
-      "timestamp": "2026-08-06T07:49:13.416706+00:00",
+      "timestamp": "2026-08-07T00:46:47.111927+00:00",
       "event_type": "workflow_step",
       "name": "intent_interpreted",
       "status": "success",
@@ -80,7 +80,7 @@
     },
     {
       "sequence": 5,
-      "timestamp": "2026-08-06T07:49:13.416724+00:00",
+      "timestamp": "2026-08-07T00:46:47.111947+00:00",
       "event_type": "workflow_step",
       "name": "route_selected",
       "status": "success",
@@ -99,7 +99,7 @@
     },
     {
       "sequence": 6,
-      "timestamp": "2026-08-06T07:49:13.416740+00:00",
+      "timestamp": "2026-08-07T00:46:47.111965+00:00",
       "event_type": "workflow_step",
       "name": "intent_detected",
       "status": "success",
@@ -116,7 +116,7 @@
     },
     {
       "sequence": 7,
-      "timestamp": "2026-08-06T07:49:13.416755+00:00",
+      "timestamp": "2026-08-07T00:46:47.111981+00:00",
       "event_type": "customer_message",
       "name": "customer_message_received",
       "status": "success",
@@ -130,7 +130,7 @@
     },
     {
       "sequence": 8,
-      "timestamp": "2026-08-06T07:49:13.416767+00:00",
+      "timestamp": "2026-08-07T00:46:47.111995+00:00",
       "event_type": "customer_message",
       "name": "customer_message_received",
       "status": "success",
@@ -144,7 +144,7 @@
     },
     {
       "sequence": 9,
-      "timestamp": "2026-08-06T07:49:13.416782+00:00",
+      "timestamp": "2026-08-07T00:46:47.112007+00:00",
       "event_type": "workflow_step",
       "name": "authentication_attempt",
       "status": "success",
@@ -161,7 +161,7 @@
     },
     {
       "sequence": 10,
-      "timestamp": "2026-08-06T07:49:13.416824+00:00",
+      "timestamp": "2026-08-07T00:46:47.112033+00:00",
       "event_type": "tool_call",
       "name": "authenticate_customer",
       "status": "success",
@@ -174,13 +174,13 @@
         "customer_id": "CUST-001",
         "card_id": "CARD-001"
       },
-      "duration_ms": 0.008,
+      "duration_ms": 0.009,
       "type": "tool_call",
       "tool": "authenticate_customer"
     },
     {
       "sequence": 11,
-      "timestamp": "2026-08-06T07:49:13.416841+00:00",
+      "timestamp": "2026-08-07T00:46:47.112051+00:00",
       "event_type": "workflow_step",
       "name": "authentication_success",
       "status": "success",
@@ -197,7 +197,7 @@
     },
     {
       "sequence": 12,
-      "timestamp": "2026-08-06T07:49:13.416867+00:00",
+      "timestamp": "2026-08-07T00:46:47.112066+00:00",
       "event_type": "workflow_step",
       "name": "customer_authenticated",
       "status": "success",
@@ -214,7 +214,7 @@
     },
     {
       "sequence": 13,
-      "timestamp": "2026-08-06T07:49:13.416884+00:00",
+      "timestamp": "2026-08-07T00:46:47.112086+00:00",
       "event_type": "tool_call",
       "name": "get_customer_cards",
       "status": "success",
@@ -233,13 +233,13 @@
           }
         ]
       },
-      "duration_ms": 0.004,
+      "duration_ms": 0.006,
       "type": "tool_call",
       "tool": "get_customer_cards"
     },
     {
       "sequence": 14,
-      "timestamp": "2026-08-06T07:49:13.416904+00:00",
+      "timestamp": "2026-08-07T00:46:47.112109+00:00",
       "event_type": "workflow_step",
       "name": "ownership_verified",
       "status": "success",
@@ -256,7 +256,7 @@
     },
     {
       "sequence": 15,
-      "timestamp": "2026-08-06T07:49:13.416920+00:00",
+      "timestamp": "2026-08-07T00:46:47.112128+00:00",
       "event_type": "tool_call",
       "name": "get_blocked_card",
       "status": "success",
@@ -274,13 +274,13 @@
           "fraud_case_id": "CASE-001"
         }
       },
-      "duration_ms": 0.003,
+      "duration_ms": 0.005,
       "type": "tool_call",
       "tool": "get_blocked_card"
     },
     {
       "sequence": 16,
-      "timestamp": "2026-08-06T07:49:13.416938+00:00",
+      "timestamp": "2026-08-07T00:46:47.112148+00:00",
       "event_type": "workflow_step",
       "name": "blocked_card_selected",
       "status": "success",
@@ -297,7 +297,7 @@
     },
     {
       "sequence": 17,
-      "timestamp": "2026-08-06T07:49:13.416958+00:00",
+      "timestamp": "2026-08-07T00:46:47.112170+00:00",
       "event_type": "tool_call",
       "name": "get_flagged_transactions",
       "status": "success",
@@ -324,7 +324,7 @@
     },
     {
       "sequence": 18,
-      "timestamp": "2026-08-06T07:49:13.416999+00:00",
+      "timestamp": "2026-08-07T00:46:47.112194+00:00",
       "event_type": "workflow_step",
       "name": "transaction_retrieved",
       "status": "success",
@@ -345,7 +345,7 @@
     },
     {
       "sequence": 19,
-      "timestamp": "2026-08-06T07:49:13.417020+00:00",
+      "timestamp": "2026-08-07T00:46:47.112217+00:00",
       "event_type": "customer_message",
       "name": "customer_message_received",
       "status": "success",
@@ -358,7 +358,7 @@
     },
     {
       "sequence": 20,
-      "timestamp": "2026-08-06T07:49:13.417033+00:00",
+      "timestamp": "2026-08-07T00:46:47.112229+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_started",
       "status": "started",
@@ -374,7 +374,7 @@
     },
     {
       "sequence": 21,
-      "timestamp": "2026-08-06T07:49:13.417047+00:00",
+      "timestamp": "2026-08-07T00:46:47.112244+00:00",
       "event_type": "llm_call",
       "name": "llm_interpretation_completed",
       "status": "success",
@@ -404,7 +404,7 @@
     },
     {
       "sequence": 22,
-      "timestamp": "2026-08-06T07:49:13.417071+00:00",
+      "timestamp": "2026-08-07T00:46:47.112270+00:00",
       "event_type": "workflow_step",
       "name": "customer_response_interpreted",
       "status": "success",
@@ -421,7 +421,7 @@
     },
     {
       "sequence": 23,
-      "timestamp": "2026-08-06T07:49:13.417085+00:00",
+      "timestamp": "2026-08-07T00:46:47.112285+00:00",
       "event_type": "workflow_step",
       "name": "transaction_verified",
       "status": "success",
@@ -438,7 +438,7 @@
     },
     {
       "sequence": 24,
-      "timestamp": "2026-08-06T07:49:13.417098+00:00",
+      "timestamp": "2026-08-07T00:46:47.112300+00:00",
       "event_type": "workflow_step",
       "name": "transaction_recognized",
       "status": "success",
@@ -453,7 +453,7 @@
     },
     {
       "sequence": 25,
-      "timestamp": "2026-08-06T07:49:13.417110+00:00",
+      "timestamp": "2026-08-07T00:46:47.112313+00:00",
       "event_type": "workflow_step",
       "name": "eligibility_checked",
       "status": "success",
@@ -470,7 +470,7 @@
     },
     {
       "sequence": 26,
-      "timestamp": "2026-08-06T07:49:13.417141+00:00",
+      "timestamp": "2026-08-07T00:46:47.112342+00:00",
       "event_type": "tool_call",
       "name": "check_removal_eligibility",
       "status": "success",
@@ -498,13 +498,13 @@
         "reason": "Standard verification allowed",
         "authorization_token": "[REDACTED]"
       },
-      "duration_ms": 0.016,
+      "duration_ms": 0.015,
       "type": "tool_call",
       "tool": "check_removal_eligibility"
     },
     {
       "sequence": 27,
-      "timestamp": "2026-08-06T07:49:13.417171+00:00",
+      "timestamp": "2026-08-07T00:46:47.112374+00:00",
       "event_type": "workflow_step",
       "name": "eligibility_approved",
       "status": "success",
@@ -521,7 +521,7 @@
     },
     {
       "sequence": 28,
-      "timestamp": "2026-08-06T07:49:13.417184+00:00",
+      "timestamp": "2026-08-07T00:46:47.112388+00:00",
       "event_type": "workflow_step",
       "name": "block_removal_attempted",
       "status": "success",
@@ -536,7 +536,7 @@
     },
     {
       "sequence": 29,
-      "timestamp": "2026-08-06T07:49:13.417201+00:00",
+      "timestamp": "2026-08-07T00:46:47.112405+00:00",
       "event_type": "tool_call",
       "name": "remove_fraud_block",
       "status": "success",
@@ -549,13 +549,13 @@
         "removed": true,
         "new_status": "active"
       },
-      "duration_ms": 0.005,
+      "duration_ms": 0.004,
       "type": "tool_call",
       "tool": "remove_fraud_block"
     },
     {
       "sequence": 30,
-      "timestamp": "2026-08-06T07:49:13.417228+00:00",
+      "timestamp": "2026-08-07T00:46:47.112421+00:00",
       "event_type": "workflow_step",
       "name": "block_removed",
       "status": "success",
@@ -570,7 +570,7 @@
     },
     {
       "sequence": 31,
-      "timestamp": "2026-08-06T07:49:13.417242+00:00",
+      "timestamp": "2026-08-07T00:46:47.112436+00:00",
       "event_type": "tool_call",
       "name": "verify_card_status",
       "status": "success",
@@ -589,7 +589,7 @@
     },
     {
       "sequence": 32,
-      "timestamp": "2026-08-06T07:49:13.417256+00:00",
+      "timestamp": "2026-08-07T00:46:47.112451+00:00",
       "event_type": "workflow_step",
       "name": "final_state_verified",
       "status": "active",
@@ -605,7 +605,7 @@
     },
     {
       "sequence": 33,
-      "timestamp": "2026-08-06T07:49:13.417268+00:00",
+      "timestamp": "2026-08-07T00:46:47.112466+00:00",
       "event_type": "final_response",
       "name": "final_response",
       "status": "success",

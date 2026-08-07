@@ -1,13 +1,15 @@
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
 
-from deepseek_intent import ApiCallBudget, ApiCallLimitExceeded  # noqa: E402
+from deepseek_intent import ApiCallBudget, ApiCallLimitExceeded, load_model_config  # noqa: E402
 from evaluation.benchmark import load_scenarios  # noqa: E402
 from evaluation.graders.code_checks import evaluate_code_checks  # noqa: E402
 from evaluation.graders.trace_checks import evaluate_trace_checks  # noqa: E402
@@ -107,6 +109,38 @@ class EvaluationPipelineTests(unittest.TestCase):
             budget.consume()
         with self.assertRaises(ApiCallLimitExceeded):
             budget.consume()
+
+    def test_generic_model_configuration_supports_custom_endpoint(self):
+        settings = {
+            "LLM_PROVIDER": "custom",
+            "LLM_API_STYLE": "openai",
+            "LLM_API_KEY": "",
+            "LLM_BASE_URL": "http://localhost:11434",
+            "LLM_MODEL": "local-demo-model",
+            "LLM_USE_JSON_MODE": "false",
+        }
+        with patch.dict(os.environ, settings):
+            config = load_model_config()
+        self.assertEqual("custom", config.provider)
+        self.assertEqual("http://localhost:11434", config.base_url)
+        self.assertEqual("local-demo-model", config.model)
+        self.assertFalse(config.use_json_mode)
+
+    def test_existing_deepseek_variables_remain_supported(self):
+        settings = {
+            "LLM_PROVIDER": "deepseek",
+            "LLM_API_KEY": "",
+            "LLM_BASE_URL": "",
+            "LLM_MODEL": "",
+            "DEEPSEEK_API_KEY": "local-test-key",
+            "DEEPSEEK_BASE_URL": "https://api.deepseek.com",
+            "DEEPSEEK_MODEL": "deepseek-chat",
+        }
+        with patch.dict(os.environ, settings):
+            config = load_model_config()
+        self.assertEqual("deepseek", config.provider)
+        self.assertEqual("deepseek-chat", config.model)
+        self.assertEqual("local-test-key", config.api_key)
 
 
 if __name__ == "__main__":
