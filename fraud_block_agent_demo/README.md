@@ -2,40 +2,80 @@
 
 This safe learning project shows an agentic credit-card fraud-block workflow from a free-form customer message through independent evaluation. All customers and banking records are fictional.
 
-The language model interprets the opening request and conversational replies. Authentication, ownership checks, eligibility, block removal, and final-state verification remain deterministic Python rules.
+The configured language model interprets the opening request and conversational replies. Authentication, ownership checks, eligibility, block removal, and final-state verification remain deterministic Python rules. The repository does not prescribe a default model provider.
 
 ## Setup
 
-From the repo root, use the existing environment and dependencies:
+Clone the repository and enter its root directory:
 
 ```bash
-conda activate llm
-pip install -r requirements.txt
+git clone https://github.com/yangzh39/llm_projects.git
+cd llm_projects
 ```
 
-Copy the example configuration and select a model provider:
+Create an isolated environment and install only this demo's dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r fraud_block_agent_demo/requirements.txt
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate`.
+
+### Configure your model
+
+Copy the safe configuration template to the repository-root `.env` file:
 
 ```bash
 cp fraud_block_agent_demo/.env.example .env
 ```
 
-The simplest DeepSeek configuration is:
-
-```text
-DEEPSEEK_API_KEY=your_key_here
-```
-
-The model layer also supports OpenAI, Anthropic, and custom OpenAI-compatible endpoints through provider-neutral settings:
+Every user must select a provider and model. Generic `LLM_*` variables work across all supported providers:
 
 ```text
 LLM_PROVIDER=openai
-LLM_API_KEY=your_key_here
-LLM_MODEL=your-model-name
+LLM_API_KEY=your_api_key
+LLM_MODEL=your_model_name
 ```
 
-For a custom endpoint, set `LLM_PROVIDER=custom`, `LLM_BASE_URL`, `LLM_MODEL`, and optionally `LLM_API_STYLE=openai|anthropic`. Custom local endpoints may omit `LLM_API_KEY`. Set `LLM_USE_JSON_MODE=false` if an OpenAI-compatible endpoint does not implement `response_format`.
+Supported provider presets are:
 
-Generic `LLM_*` settings take precedence. The legacy `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, and `DEEPSEEK_MODEL` variables remain supported, so existing local DeepSeek setups continue to run unchanged. Credentials are never written to a trace.
+| `LLM_PROVIDER` | API style | Additional configuration |
+|---|---|---|
+| `deepseek` | OpenAI-compatible | API key and model |
+| `openai` | OpenAI-compatible | API key and model |
+| `anthropic` | Anthropic Messages API | API key and model |
+| `custom` | OpenAI-compatible by default | Base URL and model; API key optional |
+
+For example, a DeepSeek user can configure:
+
+```text
+LLM_PROVIDER=deepseek
+LLM_API_KEY=your_api_key
+LLM_MODEL=deepseek-chat
+```
+
+An Anthropic user can configure:
+
+```text
+LLM_PROVIDER=anthropic
+LLM_API_KEY=your_api_key
+LLM_MODEL=your_model_name
+```
+
+For another hosted service or a local model server that exposes an OpenAI-compatible chat-completions endpoint:
+
+```text
+LLM_PROVIDER=custom
+LLM_BASE_URL=http://localhost:11434
+LLM_MODEL=your_local_model
+LLM_USE_JSON_MODE=false
+```
+
+Custom local endpoints may omit `LLM_API_KEY`. Set `LLM_API_STYLE=anthropic` only when a custom endpoint implements the Anthropic Messages API. Set `LLM_USE_JSON_MODE=false` when an OpenAI-compatible endpoint does not support the `response_format` parameter; the system prompt will still request JSON.
+
+Existing private DeepSeek configurations remain backward-compatible. If `LLM_PROVIDER` is absent but `DEEPSEEK_API_KEY` exists, the application uses `DEEPSEEK_BASE_URL` and `DEEPSEEK_MODEL`. Generic `LLM_*` variables take precedence, and credentials are never written to traces.
 
 ## Run 1: interactive exploration
 
@@ -45,13 +85,7 @@ python3 fraud_block_agent_demo/explore.py
 
 ### Optional browser chat UI
 
-Install Streamlit into the same Python environment used by the project:
-
-```bash
-python -m pip install "streamlit>=1.40,<2"
-```
-
-Then launch the browser UI with:
+Streamlit is included in the project requirements. Launch the browser UI with:
 
 ```bash
 python -m streamlit run fraud_block_agent_demo/chat_ui.py
@@ -209,6 +243,8 @@ Use an incorrect DOB with any card to demonstrate authentication failure. Full c
 
 ```text
 fraud_block_agent_demo/
+├── .env.example              # safe model-configuration template
+├── requirements.txt          # minimal standalone dependencies
 ├── explore.py                 # interactive, up to three model intent calls
 ├── chat_ui.py                 # optional Streamlit browser chat
 ├── run_evaluation.py          # deterministic, API-free evaluation runner
@@ -235,6 +271,22 @@ fraud_block_agent_demo/
 ├── tests/test_demo.py
 ├── tests/test_evaluation.py
 └── traces/                    # generated structured traces
+```
+
+## Add the demo to another repository
+
+The demo contains no nested Git repository. To copy only files currently tracked by Git—excluding your `.env`, generated artifacts, traces, caches, and local environment—run this from the source repository:
+
+```bash
+git archive HEAD fraud_block_agent_demo | tar -x -C /path/to/other-repository
+```
+
+Then review and commit the copied folder from the destination repository:
+
+```bash
+git status
+git add fraud_block_agent_demo
+git commit -m "Add fraud block agent demo"
 ```
 
 Run regression tests with:

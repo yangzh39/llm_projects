@@ -111,7 +111,16 @@ def load_model_config() -> ModelConfig:
     else:
         load_dotenv()
 
-    provider = os.getenv("LLM_PROVIDER", "deepseek").strip().lower()
+    provider = os.getenv("LLM_PROVIDER", "").strip().lower()
+    if not provider:
+        # Preserve existing private DeepSeek setups without making DeepSeek the
+        # default for new users of the shared repository.
+        if os.getenv("DEEPSEEK_API_KEY", "").strip():
+            provider = "deepseek"
+        else:
+            raise RuntimeError(
+                "LLM_PROVIDER is required. Choose deepseek, openai, anthropic, or custom in your .env file."
+            )
     presets = {
         "deepseek": ("openai", "https://api.deepseek.com", "deepseek-chat", "DEEPSEEK_API_KEY"),
         "openai": ("openai", "https://api.openai.com", "", "OPENAI_API_KEY"),

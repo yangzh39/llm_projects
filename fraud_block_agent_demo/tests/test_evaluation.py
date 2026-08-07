@@ -128,7 +128,7 @@ class EvaluationPipelineTests(unittest.TestCase):
 
     def test_existing_deepseek_variables_remain_supported(self):
         settings = {
-            "LLM_PROVIDER": "deepseek",
+            "LLM_PROVIDER": "",
             "LLM_API_KEY": "",
             "LLM_BASE_URL": "",
             "LLM_MODEL": "",
