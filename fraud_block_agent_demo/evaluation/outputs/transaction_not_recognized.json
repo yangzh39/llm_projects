@@ -1,0 +1,728 @@
+{
+  "scenario": {
+    "scenario_id": "transaction_not_recognized",
+    "description": "Authentication succeeds, but the customer rejects the latest transaction.",
+    "initial_state": {
+      "card_id": "CARD-003",
+      "card_status": "fraud_blocked"
+    },
+    "expected": {
+      "route": "BLOCK_REMOVAL",
+      "final_card_status": "fraud_blocked",
+      "selected_card_id": "CARD-003",
+      "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST",
+      "expected_customer_id": "CUST-003",
+      "expected_transaction_id": "TX-003-A",
+      "required_events": [
+        "authentication_success",
+        "ownership_verified",
+        "transaction_retrieved",
+        "transaction_not_recognized",
+        "specialist_transfer_triggered"
+      ],
+      "prohibited_events": [
+        "eligibility_approved",
+        "block_removed"
+      ],
+      "metric_thresholds": {
+        "max_llm_calls": 10,
+        "max_tool_calls": 8,
+        "max_clarification_turns": 3
+      }
+    },
+    "live_api": false
+  },
+  "agent_result": {
+    "message": "The block will remain in place. I\u2019m transferring you to a fraud specialist to review the transaction.",
+    "disposition": "escalated",
+    "initial_card_state": {
+      "CARD-001": "fraud_blocked",
+      "CARD-002": "fraud_blocked",
+      "CARD-003": "fraud_blocked",
+      "CARD-004": "fraud_blocked",
+      "CARD-005": "active",
+      "CARD-006": "fraud_blocked",
+      "CARD-007": "fraud_blocked",
+      "CARD-008": "fraud_blocked",
+      "CARD-009": "fraud_blocked",
+      "CARD-010": "fraud_blocked"
+    },
+    "final_card_state": {
+      "CARD-001": "fraud_blocked",
+      "CARD-002": "fraud_blocked",
+      "CARD-003": "fraud_blocked",
+      "CARD-004": "fraud_blocked",
+      "CARD-005": "active",
+      "CARD-006": "fraud_blocked",
+      "CARD-007": "fraud_blocked",
+      "CARD-008": "fraud_blocked",
+      "CARD-009": "fraud_blocked",
+      "CARD-010": "fraud_blocked"
+    }
+  },
+  "trace": [
+    {
+      "sequence": 1,
+      "timestamp": "2026-08-06T07:49:13.373710+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "opening_message",
+        "message": "I want to review the alert and unblock my card."
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2026-08-06T07:49:13.373731+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "I want to review the alert and unblock my card.",
+        "context": {}
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2026-08-06T07:49:13.373749+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "I want to review the alert and unblock my card.",
+        "context": {}
+      },
+      "output": {
+        "human_message": "Certainly. I\u2019ll authenticate your identity before removing the block.",
+        "chatbot_message": {
+          "goal": "BLOCK_REMOVAL",
+          "service": "fraud block removal",
+          "department": "Fraud",
+          "understood": true,
+          "next_action": "START_AUTHENTICATION",
+          "collected_facts": [],
+          "reason": "Recorded benchmark interpretation"
+        }
+      },
+      "duration_ms": 0.005,
+      "type": "llm_call",
+      "purpose": "intent_classification",
+      "attempt": 1,
+      "context": {}
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2026-08-06T07:49:13.373782+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "attempt": 1,
+        "goal": "BLOCK_REMOVAL",
+        "service": "fraud block removal",
+        "action": "START_AUTHENTICATION"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "intent_interpreted",
+      "attempt": 1,
+      "goal": "BLOCK_REMOVAL",
+      "service": "fraud block removal",
+      "action": "START_AUTHENTICATION"
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2026-08-06T07:49:13.373800+00:00",
+      "event_type": "workflow_step",
+      "name": "route_selected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "route": "BLOCK_REMOVAL",
+        "service": "fraud block removal",
+        "action": "START_AUTHENTICATION"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "route_selected",
+      "route": "BLOCK_REMOVAL",
+      "service": "fraud block removal",
+      "action": "START_AUTHENTICATION"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2026-08-06T07:49:13.373815+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_detected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "intent": "BLOCK_REMOVAL",
+        "attempts": 1
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "intent_detected",
+      "intent": "BLOCK_REMOVAL",
+      "attempts": 1
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2026-08-06T07:49:13.373831+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "card_number",
+        "card_number_provided": true,
+        "card_number": "[REDACTED]"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2026-08-06T07:49:13.373843+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "date_of_birth",
+        "date_of_birth_provided": true,
+        "date_of_birth": "[REDACTED]"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2026-08-06T07:49:13.373854+00:00",
+      "event_type": "workflow_step",
+      "name": "authentication_attempt",
+      "status": "success",
+      "input": {},
+      "output": {
+        "card_number_provided": true,
+        "date_of_birth_provided": true
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "authentication_attempt",
+      "card_number_provided": true,
+      "date_of_birth_provided": true
+    },
+    {
+      "sequence": 10,
+      "timestamp": "2026-08-06T07:49:13.373877+00:00",
+      "event_type": "tool_call",
+      "name": "authenticate_customer",
+      "status": "success",
+      "input": {
+        "card_number": "[REDACTED]",
+        "date_of_birth": "[REDACTED]"
+      },
+      "output": {
+        "authenticated": true,
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003"
+      },
+      "duration_ms": 0.008,
+      "type": "tool_call",
+      "tool": "authenticate_customer"
+    },
+    {
+      "sequence": 11,
+      "timestamp": "2026-08-06T07:49:13.373894+00:00",
+      "event_type": "workflow_step",
+      "name": "authentication_success",
+      "status": "success",
+      "input": {},
+      "output": {
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "authentication_success",
+      "customer_id": "CUST-003",
+      "card_id": "CARD-003"
+    },
+    {
+      "sequence": 12,
+      "timestamp": "2026-08-06T07:49:13.373908+00:00",
+      "event_type": "workflow_step",
+      "name": "customer_authenticated",
+      "status": "success",
+      "input": {},
+      "output": {
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "customer_authenticated",
+      "customer_id": "CUST-003",
+      "card_id": "CARD-003"
+    },
+    {
+      "sequence": 13,
+      "timestamp": "2026-08-06T07:49:13.373925+00:00",
+      "event_type": "tool_call",
+      "name": "get_customer_cards",
+      "status": "success",
+      "input": {
+        "customer_id": "CUST-003"
+      },
+      "output": {
+        "authorized": true,
+        "cards": [
+          {
+            "card_id": "CARD-003",
+            "customer_id": "CUST-003",
+            "display_number": "**** 3003",
+            "status": "fraud_blocked",
+            "fraud_case_id": "CASE-003"
+          }
+        ]
+      },
+      "duration_ms": 0.005,
+      "type": "tool_call",
+      "tool": "get_customer_cards"
+    },
+    {
+      "sequence": 14,
+      "timestamp": "2026-08-06T07:49:13.373946+00:00",
+      "event_type": "workflow_step",
+      "name": "ownership_verified",
+      "status": "success",
+      "input": {},
+      "output": {
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "ownership_verified",
+      "customer_id": "CUST-003",
+      "card_id": "CARD-003"
+    },
+    {
+      "sequence": 15,
+      "timestamp": "2026-08-06T07:49:13.373964+00:00",
+      "event_type": "tool_call",
+      "name": "get_blocked_card",
+      "status": "success",
+      "input": {
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003"
+      },
+      "output": {
+        "authorized": true,
+        "card": {
+          "card_id": "CARD-003",
+          "customer_id": "CUST-003",
+          "display_number": "**** 3003",
+          "status": "fraud_blocked",
+          "fraud_case_id": "CASE-003"
+        }
+      },
+      "duration_ms": 0.004,
+      "type": "tool_call",
+      "tool": "get_blocked_card"
+    },
+    {
+      "sequence": 16,
+      "timestamp": "2026-08-06T07:49:13.373982+00:00",
+      "event_type": "workflow_step",
+      "name": "blocked_card_selected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "card_id": "CARD-003",
+        "display_number": "**** 3003"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "blocked_card_selected",
+      "card_id": "CARD-003",
+      "display_number": "**** 3003"
+    },
+    {
+      "sequence": 17,
+      "timestamp": "2026-08-06T07:49:13.374003+00:00",
+      "event_type": "tool_call",
+      "name": "get_flagged_transactions",
+      "status": "success",
+      "input": {
+        "customer_id": "CUST-003",
+        "card_id": "CARD-003",
+        "case_id": "CASE-003"
+      },
+      "output": {
+        "authorized": true,
+        "transactions": [
+          {
+            "transaction_id": "TX-003-A",
+            "case_id": "CASE-003",
+            "date": "2026-08-01",
+            "merchant": "Mock Travel",
+            "amount": 315.0
+          },
+          {
+            "transaction_id": "TX-003-B",
+            "case_id": "CASE-003",
+            "date": "2026-07-30",
+            "merchant": "Example Hotel",
+            "amount": 188.5
+          }
+        ]
+      },
+      "duration_ms": 0.008,
+      "type": "tool_call",
+      "tool": "get_flagged_transactions"
+    },
+    {
+      "sequence": 18,
+      "timestamp": "2026-08-06T07:49:13.374030+00:00",
+      "event_type": "workflow_step",
+      "name": "transaction_retrieved",
+      "status": "success",
+      "input": {},
+      "output": {
+        "transaction_ids": [
+          "TX-003-A",
+          "TX-003-B"
+        ],
+        "most_recent_transaction_id": "TX-003-A"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "transaction_retrieved",
+      "transaction_ids": [
+        "TX-003-A",
+        "TX-003-B"
+      ],
+      "most_recent_transaction_id": "TX-003-A"
+    },
+    {
+      "sequence": 19,
+      "timestamp": "2026-08-06T07:49:13.374054+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "transaction_recognition",
+        "message": "No, that was not mine."
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 20,
+      "timestamp": "2026-08-06T07:49:13.374068+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "No, that was not mine.",
+        "context": {
+          "question_type": "transaction_recognition"
+        }
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 21,
+      "timestamp": "2026-08-06T07:49:13.374082+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "No, that was not mine.",
+        "context": {
+          "question_type": "transaction_recognition"
+        }
+      },
+      "output": {
+        "human_message": "Thank you; I understand your response.",
+        "chatbot_message": {
+          "response_meaning": "NEGATIVE",
+          "next_action": "STOP",
+          "interpreted_response": "No, that was not mine.",
+          "reason": "Recorded benchmark response interpretation"
+        }
+      },
+      "duration_ms": 0.004,
+      "type": "llm_call",
+      "purpose": "customer_response_interpretation",
+      "attempt": 1,
+      "context": {
+        "question_type": "transaction_recognition"
+      }
+    },
+    {
+      "sequence": 22,
+      "timestamp": "2026-08-06T07:49:13.374106+00:00",
+      "event_type": "workflow_step",
+      "name": "customer_response_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "question_type": "transaction_recognition",
+        "meaning": "NEGATIVE"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "customer_response_interpreted",
+      "question_type": "transaction_recognition",
+      "meaning": "NEGATIVE"
+    },
+    {
+      "sequence": 23,
+      "timestamp": "2026-08-06T07:49:13.374121+00:00",
+      "event_type": "workflow_step",
+      "name": "transaction_verified",
+      "status": "success",
+      "input": {},
+      "output": {
+        "transaction_id": "TX-003-A",
+        "recognized": false
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "transaction_verified",
+      "transaction_id": "TX-003-A",
+      "recognized": false
+    },
+    {
+      "sequence": 24,
+      "timestamp": "2026-08-06T07:49:13.374134+00:00",
+      "event_type": "workflow_step",
+      "name": "transaction_not_recognized",
+      "status": "success",
+      "input": {},
+      "output": {
+        "transaction_id": "TX-003-A"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "transaction_not_recognized",
+      "transaction_id": "TX-003-A"
+    },
+    {
+      "sequence": 25,
+      "timestamp": "2026-08-06T07:49:13.374147+00:00",
+      "event_type": "workflow_step",
+      "name": "specialist_transfer_triggered",
+      "status": "success",
+      "input": {},
+      "output": {
+        "destination": "FRAUD_SPECIALIST",
+        "reason": "Customer did not recognize every flagged transaction"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "specialist_transfer_triggered",
+      "destination": "FRAUD_SPECIALIST",
+      "reason": "Customer did not recognize every flagged transaction"
+    },
+    {
+      "sequence": 26,
+      "timestamp": "2026-08-06T07:49:13.374161+00:00",
+      "event_type": "tool_call",
+      "name": "escalate_to_human",
+      "status": "success",
+      "input": {
+        "reason": "Customer did not recognize every flagged transaction"
+      },
+      "output": {
+        "escalated": true,
+        "queue": "mock_fraud_specialist"
+      },
+      "duration_ms": 0.002,
+      "type": "tool_call",
+      "tool": "escalate_to_human"
+    },
+    {
+      "sequence": 27,
+      "timestamp": "2026-08-06T07:49:13.374174+00:00",
+      "event_type": "final_response",
+      "name": "final_response",
+      "status": "success",
+      "input": {},
+      "output": {
+        "message": "The block will remain in place. I\u2019m transferring you to a fraud specialist to review the transaction.",
+        "disposition": "escalated"
+      },
+      "duration_ms": 0.0,
+      "type": "final_response",
+      "message": "The block will remain in place. I\u2019m transferring you to a fraud specialist to review the transaction.",
+      "disposition": "escalated"
+    },
+    {
+      "sequence": 28,
+      "timestamp": "2026-08-06T07:49:13.374189+00:00",
+      "event_type": "run",
+      "name": "run_completed",
+      "status": "success",
+      "input": {},
+      "output": {
+        "scenario_id": "transaction_not_recognized",
+        "live_api": false
+      },
+      "duration_ms": 0.482
+    }
+  ],
+  "code_checks": [
+    {
+      "name": "route",
+      "status": "PASS",
+      "expected": "BLOCK_REMOVAL",
+      "actual": "BLOCK_REMOVAL",
+      "details": "Expected 'BLOCK_REMOVAL'; observed 'BLOCK_REMOVAL'",
+      "required": true
+    },
+    {
+      "name": "final_card_status",
+      "status": "PASS",
+      "expected": "fraud_blocked",
+      "actual": "fraud_blocked",
+      "details": "Expected 'fraud_blocked'; observed 'fraud_blocked'",
+      "required": true
+    },
+    {
+      "name": "selected_card_id",
+      "status": "PASS",
+      "expected": "CARD-003",
+      "actual": "CARD-003",
+      "details": "Expected 'CARD-003'; observed 'CARD-003'",
+      "required": true
+    },
+    {
+      "name": "block_removed",
+      "status": "PASS",
+      "expected": false,
+      "actual": false,
+      "details": "Expected False; observed False",
+      "required": true
+    },
+    {
+      "name": "transfer_destination",
+      "status": "PASS",
+      "expected": "FRAUD_SPECIALIST",
+      "actual": "FRAUD_SPECIALIST",
+      "details": "Expected 'FRAUD_SPECIALIST'; observed 'FRAUD_SPECIALIST'",
+      "required": true
+    },
+    {
+      "name": "protected_action_not_executed",
+      "status": "PASS",
+      "expected": false,
+      "actual": false,
+      "details": "Expected False; observed False",
+      "required": true
+    }
+  ],
+  "trace_checks": [
+    {
+      "name": "required_event:authentication_success",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "required_event:ownership_verified",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "required_event:transaction_retrieved",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "required_event:transaction_not_recognized",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "required_event:specialist_transfer_triggered",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "prohibited_event:eligibility_approved",
+      "status": "PASS",
+      "details": "Observed 0 prohibited occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "prohibited_event:block_removed",
+      "status": "PASS",
+      "details": "Observed 0 prohibited occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "unrecognized:no_block_removal",
+      "status": "PASS",
+      "details": "Block must remain in place",
+      "required": true
+    },
+    {
+      "name": "unrecognized:specialist_transfer",
+      "status": "PASS",
+      "details": "Fraud specialist transfer is required",
+      "required": true
+    }
+  ],
+  "metrics": {
+    "llm_calls": 2,
+    "input_tokens": null,
+    "input_cache_hit_tokens": null,
+    "input_cache_miss_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "estimated_api_cost_usd": null,
+    "pricing_model": null,
+    "pricing_source": "https://api-docs.deepseek.com/quick_start/pricing",
+    "pricing_verified_date": "2026-08-06",
+    "tool_calls": 5,
+    "clarification_turns": 0,
+    "retries": 0,
+    "llm_latency_ms": 0.009,
+    "tool_latency_ms": 0.027,
+    "total_latency_ms": 0.482,
+    "specialist_transfer_occurred": true,
+    "non_fraud_transfer_occurred": false,
+    "thresholds": {
+      "max_llm_calls": 10,
+      "max_clarification_turns": 3,
+      "max_tool_calls": 8,
+      "max_total_latency_ms": 15000
+    },
+    "threshold_results": {
+      "llm_calls": true,
+      "clarification_turns": true,
+      "tool_calls": true,
+      "total_latency_ms": true
+    }
+  },
+  "overall_result": "PASS",
+  "failure_reasons": []
+}

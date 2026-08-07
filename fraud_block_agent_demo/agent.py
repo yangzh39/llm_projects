@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+from time import perf_counter
 from typing import Any, Callable
 
+from evaluation.trace import RunTracer
 from tools import MockBankTools
 
 
@@ -18,17 +20,31 @@ OutputPresenter = Callable[[str, dict[str, Any]], None]
 
 class FraudBlockAgent:
     def __init__(self, data_dir: Path) -> None:
-        self.trace: list[dict[str, Any]] = []
-        self.tools = MockBankTools(data_dir, self.trace)
+        self.tracer = RunTracer()
+        self.trace = self.tracer.events
+        self.tools = MockBankTools(data_dir, self.tracer)
 
     def _step(self, step: str, **details: Any) -> None:
-        self.trace.append({"type": "workflow_step", "step": step, **details})
+        status = "failed" if step.endswith("_failed") or step.endswith("_rejected") else "success"
+        self.tracer.record(
+            "workflow_step",
+            step,
+            status=status,
+            output=details,
+            legacy={"type": "workflow_step", "step": step, **details},
+        )
 
     def _finish(self, message: str, disposition: str) -> dict[str, Any]:
-        self.trace.append({"type": "final_response", "message": message, "disposition": disposition})
+        self.tracer.record(
+            "final_response",
+            "final_response",
+            output={"message": message, "disposition": disposition},
+            legacy={"type": "final_response", "message": message, "disposition": disposition},
+        )
         return {"message": message, "disposition": disposition, "trace": self.trace}
 
     def _escalate(self, reason: str, message: str) -> dict[str, Any]:
+        self._step("specialist_transfer_triggered", destination="FRAUD_SPECIALIST", reason=reason)
         self.tools.escalate_to_human(reason)
         return self._finish(message, "escalated")
 
@@ -43,6 +59,73 @@ class FraudBlockAgent:
         flawed: bool = False,
     ) -> dict[str, Any]:
         present = present_llm_output or (lambda _human, _chatbot: None)
+        self.tracer.record(
+            "customer_message",
+            "customer_message_received",
+            input={"kind": "opening_message", "message": request},
+        )
+
+        def ask(kind: str, context: dict[str, Any]) -> str:
+            response = answer(kind, context)
+            if kind in {"card_number", "date_of_birth"}:
+                event_input = {
+                    "kind": kind,
+                    f"{kind}_provided": bool(response.strip()),
+                    kind: response,
+                }
+            else:
+                event_input = {"kind": kind, "message": response}
+            self.tracer.record("customer_message", "customer_message_received", input=event_input)
+            return response
+
+        def call_llm(
+            purpose: str,
+            call: Callable[[], dict[str, Any]],
+            *,
+            input_value: str,
+            attempt_number: int,
+            context: dict[str, Any] | None = None,
+        ) -> dict[str, Any]:
+            self.tracer.record(
+                "llm_call",
+                "llm_interpretation_started",
+                status="started",
+                input={"purpose": purpose, "message": input_value, "context": context or {}},
+            )
+            started_at = perf_counter()
+            try:
+                result = call()
+            except Exception as error:
+                self.tracer.record(
+                    "llm_call",
+                    "llm_interpretation_completed",
+                    status="error",
+                    input={"purpose": purpose, "context": context or {}},
+                    output={"error_type": type(error).__name__, "message": str(error)},
+                    duration_ms=(perf_counter() - started_at) * 1000,
+                )
+                raise
+            api_metrics = result.pop("_api_metrics", {}) if isinstance(result, dict) else {}
+            duration_ms = float(api_metrics.get("latency_ms", (perf_counter() - started_at) * 1000))
+            trace_output = dict(result)
+            if api_metrics.get("usage") is not None:
+                trace_output["usage"] = api_metrics["usage"]
+            if api_metrics.get("model"):
+                trace_output["model"] = api_metrics["model"]
+            self.tracer.record(
+                "llm_call",
+                "llm_interpretation_completed",
+                input={"purpose": purpose, "message": input_value, "context": context or {}},
+                output=trace_output,
+                duration_ms=duration_ms,
+                legacy={
+                    "type": "llm_call",
+                    "purpose": purpose,
+                    "attempt": attempt_number,
+                    "context": context or {},
+                },
+            )
+            return result
 
         def interpret_reply(
             raw_response: str,
@@ -53,28 +136,23 @@ class FraudBlockAgent:
         ) -> tuple[str | None, str]:
             response = raw_response
             for response_attempt in range(1, 4):
-                interpretation = interpret_customer_response(
-                    response,
-                    {"question_type": question_type, "question": question, "details": details or {}},
+                workflow_context = {"question_type": question_type, "question": question, "details": details or {}}
+                interpretation = call_llm(
+                    "customer_response_interpretation",
+                    lambda: interpret_customer_response(response, workflow_context),
+                    input_value=response,
+                    attempt_number=response_attempt,
+                    context={"question_type": question_type},
                 )
                 chatbot_message = interpretation.get("chatbot_message", {})
                 meaning = chatbot_message.get("response_meaning", "UNCLEAR")
-                self.trace.append(
-                    {
-                        "type": "llm_call",
-                        "purpose": "customer_response_interpretation",
-                        "attempt": response_attempt,
-                        "input": response,
-                        "context": {"question_type": question_type},
-                        "output": interpretation,
-                    }
-                )
                 self._step("customer_response_interpreted", question_type=question_type, meaning=meaning)
                 if meaning in {"AFFIRMATIVE", "NEGATIVE", "FRAUD_REQUEST", "NEW_REQUEST"}:
                     return meaning, response
                 present(str(interpretation.get("human_message", "")).strip(), chatbot_message)
                 if response_attempt < 3:
-                    response = answer("response_clarification", {"prompt": "Customer: ", "question_type": question_type})
+                    self._step("clarification_requested", question_type=question_type, attempt=response_attempt + 1)
+                    response = ask("response_clarification", {"prompt": "Customer: ", "question_type": question_type})
             return None, response
 
         current_message = request
@@ -84,7 +162,12 @@ class FraudBlockAgent:
         attempt = 0
         while attempt < 3:
             attempt += 1
-            classification = classify_intent(current_message)
+            classification = call_llm(
+                "intent_classification",
+                lambda: classify_intent(current_message),
+                input_value=current_message,
+                attempt_number=attempt,
+            )
             human_message = str(classification.get("human_message", "")).strip()
             chatbot_message = classification.get("chatbot_message", {})
             goal = chatbot_message.get("goal", "UNCLEAR")
@@ -92,16 +175,8 @@ class FraudBlockAgent:
             service = chatbot_message.get("service", "Unclear")
             raw_department = str(chatbot_message.get("department", "General Customer Service"))
             department = re.sub(r"[^A-Za-z0-9 &-]", "", raw_department).strip()[:60] or "General Customer Service"
-            self.trace.append(
-                {
-                    "type": "llm_call",
-                    "purpose": "intent_classification",
-                    "attempt": attempt,
-                    "input": current_message,
-                    "output": classification,
-                }
-            )
             self._step("intent_interpreted", attempt=attempt, goal=goal, service=service, action=action)
+            self._step("route_selected", route=goal, service=service, action=action)
             present(human_message, chatbot_message)
             conversation_history.append({"role": "assistant", "message": human_message})
 
@@ -130,7 +205,7 @@ class FraudBlockAgent:
 
             if action == "OFFER_TRANSFER_OR_FRAUD_HELP":
                 self._step("department_transfer_offered", department=department)
-                raw_response = answer("department_transfer_confirmation", {"prompt": "Customer: ", "department": department})
+                raw_response = ask("department_transfer_confirmation", {"prompt": "Customer: ", "department": department})
                 response_meaning, interpreted_response = interpret_reply(
                     raw_response,
                     question_type="non_fraud_transfer_or_fraud_help",
@@ -140,6 +215,7 @@ class FraudBlockAgent:
                 accepted = response_meaning == "AFFIRMATIVE"
                 self._step("department_transfer_confirmation", department=department, confirmed=accepted)
                 if accepted:
+                    self._step("non_fraud_transfer_triggered", destination=department)
                     self.tools.transfer_to_department(department)
                     return self._finish(f"I’m transferring you to {department} now.", "transferred")
                 if response_meaning == "NEW_REQUEST":
@@ -165,7 +241,7 @@ class FraudBlockAgent:
 
             clarification = ""
             if action == "CONFIRM_BLOCK_REMOVAL":
-                confirmation_response = answer("block_removal_intent_confirmation", {"prompt": "Customer: "})
+                confirmation_response = ask("block_removal_intent_confirmation", {"prompt": "Customer: "})
                 response_meaning, interpreted_response = interpret_reply(
                     confirmation_response,
                     question_type="block_removal_intent_confirmation",
@@ -206,7 +282,8 @@ class FraudBlockAgent:
                 )
 
             if action == "ASK_CLARIFICATION":
-                clarification = answer(
+                self._step("clarification_requested", question_type="intent_classification", attempt=attempt + 1)
+                clarification = ask(
                     "llm_clarification",
                     {"prompt": "Customer: ", "attempt": attempt + 1},
                 ).strip()
@@ -224,26 +301,30 @@ class FraudBlockAgent:
                 "I could not safely route this request. I’m transferring you to a fraud specialist.",
             )
 
-        card_number = answer(
+        card_number = ask(
             "card_number",
             {
                 "prompt": "Assistant: Certainly. Before I remove the block, I need to authenticate your identity. Please enter the full fake card number: "
             },
         ).strip()
-        date_of_birth = answer("date_of_birth", {"prompt": "Assistant: Please enter your date of birth (YYYY-MM-DD): "}).strip()
+        date_of_birth = ask("date_of_birth", {"prompt": "Assistant: Please enter your date of birth (YYYY-MM-DD): "}).strip()
+        self._step("authentication_attempt", card_number_provided=bool(card_number), date_of_birth_provided=bool(date_of_birth))
         auth = self.tools.authenticate_customer(card_number, date_of_birth)
         if not auth["authenticated"]:
+            self._step("authentication_failed")
             return self._escalate(
                 "Authentication failed; no account data disclosed",
                 "I could not verify your identity. No account details were accessed. I’m transferring you to a specialist.",
             )
 
+        self._step("authentication_success", customer_id=auth["customer_id"], card_id=auth["card_id"])
         customer_id = auth["customer_id"]
         card_id = auth["card_id"]
         self._step("customer_authenticated", customer_id=customer_id, card_id=card_id)
         cards = self.tools.get_customer_cards(customer_id)
         if not any(card["card_id"] == card_id for card in cards["cards"]):
             return self._escalate("Authenticated card was not owned by customer", "I could not verify card ownership. I’m transferring you to a specialist.")
+        self._step("ownership_verified", customer_id=customer_id, card_id=card_id)
 
         blocked = self.tools.get_blocked_card(customer_id, card_id)
         card = blocked["card"]
@@ -255,6 +336,11 @@ class FraudBlockAgent:
         transactions = transaction_result["transactions"]
         if not transactions:
             return self._escalate("No flagged transactions found for the case", "I could not retrieve the fraud-case transactions. I’m transferring you to a specialist.")
+        self._step(
+            "transaction_retrieved",
+            transaction_ids=[transaction["transaction_id"] for transaction in transactions],
+            most_recent_transaction_id=transactions[0]["transaction_id"],
+        )
 
         verified_ids: list[str] = []
         recognized_ids: list[str] = []
@@ -262,7 +348,7 @@ class FraudBlockAgent:
         # is used for customer verification in the current business workflow.
         transactions_to_ask = transactions[1:2] if flawed and len(transactions) > 1 else transactions[:1]
         for index, transaction in enumerate(transactions_to_ask):
-            response = answer(
+            response = ask(
                 "transaction_recognition",
                 {
                     "prompt": f"Assistant: Do you recognize {transaction['date']} | {transaction['merchant']} | ${transaction['amount']:.2f}? (yes/no): ",
@@ -280,6 +366,10 @@ class FraudBlockAgent:
                 return self._escalate("Transaction recognition remained unclear", "I could not confirm whether you recognize the transaction. I’m transferring you to a fraud specialist.")
             recognized = response_meaning == "AFFIRMATIVE"
             self._step("transaction_verified", transaction_id=transaction["transaction_id"], recognized=recognized)
+            self._step(
+                "transaction_recognized" if recognized else "transaction_not_recognized",
+                transaction_id=transaction["transaction_id"],
+            )
             verified_ids.append(transaction["transaction_id"])
             if recognized:
                 recognized_ids.append(transaction["transaction_id"])
@@ -297,19 +387,25 @@ class FraudBlockAgent:
             recognized_ids = verified_ids.copy()
             self._step("flawed_shortcut", detail="Agent claimed the newest transaction was verified")
 
+        self._step("eligibility_checked", card_id=card_id, case_id=card["fraud_case_id"])
         eligibility = self.tools.check_removal_eligibility(
             customer_id, card_id, card["fraud_case_id"], verified_ids, recognized_ids
         )
         if not eligibility["eligible"]:
+            self._step("eligibility_rejected", reason=eligibility.get("reason"))
             return self._escalate(
                 "Automatic removal eligibility checks failed",
                 "This case is not eligible for automatic removal. I’m transferring you to a fraud specialist.",
             )
 
+        self._step("eligibility_approved", card_id=card_id, case_id=card["fraud_case_id"])
+        self._step("block_removal_attempted", card_id=card_id)
         removal = self.tools.remove_fraud_block(customer_id, card_id, eligibility["authorization_token"])
         if not removal["removed"]:
             return self._escalate("Removal tool rejected the action", "The block could not be removed. I’m transferring you to a specialist.")
+        self._step("block_removed", card_id=card_id)
         final_state = self.tools.verify_card_status(customer_id, card_id)
         if final_state["status"] != "active":
             return self._escalate("Final state was not active", "I could not verify the card status. I’m transferring you to a specialist.")
+        self._step("final_state_verified", card_id=card_id, status=final_state["status"])
         return self._finish(f"Your card {card['display_number']} is active again. The fraud block was removed.", "completed")

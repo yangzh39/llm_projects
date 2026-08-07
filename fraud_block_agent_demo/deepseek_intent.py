@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+from time import perf_counter
 from typing import Any
-
-import requests
-from dotenv import load_dotenv
 
 
 SYSTEM_PROMPT = """You are the conversational routing layer for a bank's Fraud Department.
@@ -66,7 +64,25 @@ ALLOWED_RESPONSE_MEANINGS = {"AFFIRMATIVE", "NEGATIVE", "FRAUD_REQUEST", "NEW_RE
 ALLOWED_RESPONSE_ACTIONS = {"CONTINUE", "STOP", "START_FRAUD_SESSION", "RECLASSIFY", "ASK_CLARIFICATION"}
 
 
-def _call_deepseek(system_prompt: str, message: str) -> dict[str, Any]:
+class ApiCallLimitExceeded(RuntimeError):
+    """Raised before an API request would exceed the session budget."""
+
+
+class ApiCallBudget:
+    def __init__(self, maximum_calls: int = 10) -> None:
+        self.maximum_calls = maximum_calls
+        self.calls_used = 0
+
+    def consume(self) -> None:
+        if self.calls_used >= self.maximum_calls:
+            raise ApiCallLimitExceeded(f"The live evaluation reached its {self.maximum_calls}-call API limit.")
+        self.calls_used += 1
+
+
+def _call_deepseek(system_prompt: str, message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
+    import requests
+    from dotenv import load_dotenv
+
     load_dotenv()
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
@@ -74,6 +90,9 @@ def _call_deepseek(system_prompt: str, message: str) -> dict[str, Any]:
     if not api_key:
         raise RuntimeError("DEEPSEEK_API_KEY is missing. Add it to the repo's existing .env file.")
 
+    if budget:
+        budget.consume()
+    started_at = perf_counter()
     response = requests.post(
         f"{base_url}/v1/chat/completions",
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
@@ -89,11 +108,19 @@ def _call_deepseek(system_prompt: str, message: str) -> dict[str, Any]:
         timeout=60,
     )
     response.raise_for_status()
-    return json.loads(response.json()["choices"][0]["message"]["content"].strip())
+    payload = response.json()
+    result = json.loads(payload["choices"][0]["message"]["content"].strip())
+    usage = payload.get("usage")
+    result["_api_metrics"] = {
+        "model": payload.get("model", model),
+        "usage": usage if isinstance(usage, dict) else None,
+        "latency_ms": (perf_counter() - started_at) * 1000,
+    }
+    return result
 
 
-def classify_with_deepseek(message: str) -> dict[str, Any]:
-    result = _call_deepseek(SYSTEM_PROMPT, message)
+def classify_with_deepseek(message: str, budget: ApiCallBudget | None = None) -> dict[str, Any]:
+    result = _call_deepseek(SYSTEM_PROMPT, message, budget)
     chatbot_message = result.get("chatbot_message", {})
     if not isinstance(result.get("human_message"), str) or not result["human_message"].strip():
         raise RuntimeError("DeepSeek did not return a customer-facing human_message.")
@@ -104,14 +131,18 @@ def classify_with_deepseek(message: str) -> dict[str, Any]:
     return result
 
 
-def interpret_response_with_deepseek(message: str, context: dict[str, Any]) -> dict[str, Any]:
+def interpret_response_with_deepseek(
+    message: str,
+    context: dict[str, Any],
+    budget: ApiCallBudget | None = None,
+) -> dict[str, Any]:
     prompt = (
         f"Question type: {context['question_type']}\n"
         f"Question asked: {context['question']}\n"
         f"Relevant workflow context: {json.dumps(context.get('details', {}))}\n"
         f"Customer response: {message}"
     )
-    result = _call_deepseek(RESPONSE_SYSTEM_PROMPT, prompt)
+    result = _call_deepseek(RESPONSE_SYSTEM_PROMPT, prompt, budget)
     chatbot_message = result.get("chatbot_message", {})
     if not isinstance(result.get("human_message"), str) or not result["human_message"].strip():
         raise RuntimeError("DeepSeek did not return a response acknowledgement.")

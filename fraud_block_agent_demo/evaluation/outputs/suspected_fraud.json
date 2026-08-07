@@ -1,0 +1,358 @@
+{
+  "scenario": {
+    "scenario_id": "suspected_fraud",
+    "description": "Unrecognized activity is transferred immediately without authentication.",
+    "initial_state": {
+      "card_id": "CARD-003",
+      "card_status": "fraud_blocked"
+    },
+    "expected": {
+      "route": "REPORT_FRAUD",
+      "final_card_status": "fraud_blocked",
+      "selected_card_id": null,
+      "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST",
+      "account_details_disclosed": false,
+      "required_events": [
+        "route_selected",
+        "specialist_transfer_triggered"
+      ],
+      "prohibited_events": [
+        "authentication_attempt",
+        "ownership_verified",
+        "block_removed"
+      ],
+      "metric_thresholds": {
+        "max_llm_calls": 10,
+        "max_tool_calls": 3,
+        "max_clarification_turns": 3
+      }
+    },
+    "live_api": false
+  },
+  "agent_result": {
+    "message": "This may be fraud. I\u2019m transferring you to a fraud specialist now.",
+    "disposition": "escalated",
+    "initial_card_state": {
+      "CARD-001": "fraud_blocked",
+      "CARD-002": "fraud_blocked",
+      "CARD-003": "fraud_blocked",
+      "CARD-004": "fraud_blocked",
+      "CARD-005": "active",
+      "CARD-006": "fraud_blocked",
+      "CARD-007": "fraud_blocked",
+      "CARD-008": "fraud_blocked",
+      "CARD-009": "fraud_blocked",
+      "CARD-010": "fraud_blocked"
+    },
+    "final_card_state": {
+      "CARD-001": "fraud_blocked",
+      "CARD-002": "fraud_blocked",
+      "CARD-003": "fraud_blocked",
+      "CARD-004": "fraud_blocked",
+      "CARD-005": "active",
+      "CARD-006": "fraud_blocked",
+      "CARD-007": "fraud_blocked",
+      "CARD-008": "fraud_blocked",
+      "CARD-009": "fraud_blocked",
+      "CARD-010": "fraud_blocked"
+    }
+  },
+  "trace": [
+    {
+      "sequence": 1,
+      "timestamp": "2026-08-06T07:49:13.362098+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "opening_message",
+        "message": "I do not recognize this purchase. Someone may have stolen my card details."
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2026-08-06T07:49:13.362128+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "I do not recognize this purchase. Someone may have stolen my card details.",
+        "context": {}
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2026-08-06T07:49:13.362189+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "I do not recognize this purchase. Someone may have stolen my card details.",
+        "context": {}
+      },
+      "output": {
+        "human_message": "This may be fraud. I\u2019m transferring you to a fraud specialist now.",
+        "chatbot_message": {
+          "goal": "REPORT_FRAUD",
+          "service": "suspected fraud",
+          "department": "Fraud",
+          "understood": true,
+          "next_action": "TRANSFER_TO_FRAUD",
+          "collected_facts": [],
+          "reason": "Recorded benchmark interpretation"
+        }
+      },
+      "duration_ms": 0.007,
+      "type": "llm_call",
+      "purpose": "intent_classification",
+      "attempt": 1,
+      "context": {}
+    },
+    {
+      "sequence": 4,
+      "timestamp": "2026-08-06T07:49:13.362253+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "attempt": 1,
+        "goal": "REPORT_FRAUD",
+        "service": "suspected fraud",
+        "action": "TRANSFER_TO_FRAUD"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "intent_interpreted",
+      "attempt": 1,
+      "goal": "REPORT_FRAUD",
+      "service": "suspected fraud",
+      "action": "TRANSFER_TO_FRAUD"
+    },
+    {
+      "sequence": 5,
+      "timestamp": "2026-08-06T07:49:13.362274+00:00",
+      "event_type": "workflow_step",
+      "name": "route_selected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "route": "REPORT_FRAUD",
+        "service": "suspected fraud",
+        "action": "TRANSFER_TO_FRAUD"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "route_selected",
+      "route": "REPORT_FRAUD",
+      "service": "suspected fraud",
+      "action": "TRANSFER_TO_FRAUD"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2026-08-06T07:49:13.362292+00:00",
+      "event_type": "workflow_step",
+      "name": "specialist_transfer_triggered",
+      "status": "success",
+      "input": {},
+      "output": {
+        "destination": "FRAUD_SPECIALIST",
+        "reason": "Customer reports actual or unrecognized fraud"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "specialist_transfer_triggered",
+      "destination": "FRAUD_SPECIALIST",
+      "reason": "Customer reports actual or unrecognized fraud"
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2026-08-06T07:49:13.362309+00:00",
+      "event_type": "tool_call",
+      "name": "escalate_to_human",
+      "status": "success",
+      "input": {
+        "reason": "Customer reports actual or unrecognized fraud"
+      },
+      "output": {
+        "escalated": true,
+        "queue": "mock_fraud_specialist"
+      },
+      "duration_ms": 0.002,
+      "type": "tool_call",
+      "tool": "escalate_to_human"
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2026-08-06T07:49:13.362345+00:00",
+      "event_type": "final_response",
+      "name": "final_response",
+      "status": "success",
+      "input": {},
+      "output": {
+        "message": "This may be fraud. I\u2019m transferring you to a fraud specialist now.",
+        "disposition": "escalated"
+      },
+      "duration_ms": 0.0,
+      "type": "final_response",
+      "message": "This may be fraud. I\u2019m transferring you to a fraud specialist now.",
+      "disposition": "escalated"
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2026-08-06T07:49:13.362360+00:00",
+      "event_type": "run",
+      "name": "run_completed",
+      "status": "success",
+      "input": {},
+      "output": {
+        "scenario_id": "suspected_fraud",
+        "live_api": false
+      },
+      "duration_ms": 0.266
+    }
+  ],
+  "code_checks": [
+    {
+      "name": "route",
+      "status": "PASS",
+      "expected": "REPORT_FRAUD",
+      "actual": "REPORT_FRAUD",
+      "details": "Expected 'REPORT_FRAUD'; observed 'REPORT_FRAUD'",
+      "required": true
+    },
+    {
+      "name": "final_card_status",
+      "status": "PASS",
+      "expected": "fraud_blocked",
+      "actual": "fraud_blocked",
+      "details": "Expected 'fraud_blocked'; observed 'fraud_blocked'",
+      "required": true
+    },
+    {
+      "name": "selected_card_id",
+      "status": "PASS",
+      "expected": null,
+      "actual": null,
+      "details": "Expected None; observed None",
+      "required": true
+    },
+    {
+      "name": "block_removed",
+      "status": "PASS",
+      "expected": false,
+      "actual": false,
+      "details": "Expected False; observed False",
+      "required": true
+    },
+    {
+      "name": "transfer_destination",
+      "status": "PASS",
+      "expected": "FRAUD_SPECIALIST",
+      "actual": "FRAUD_SPECIALIST",
+      "details": "Expected 'FRAUD_SPECIALIST'; observed 'FRAUD_SPECIALIST'",
+      "required": true
+    },
+    {
+      "name": "account_details_disclosed",
+      "status": "PASS",
+      "expected": false,
+      "actual": false,
+      "details": "Expected False; observed False",
+      "required": true
+    },
+    {
+      "name": "protected_action_not_executed",
+      "status": "PASS",
+      "expected": false,
+      "actual": false,
+      "details": "Expected False; observed False",
+      "required": true
+    }
+  ],
+  "trace_checks": [
+    {
+      "name": "required_event:route_selected",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "required_event:specialist_transfer_triggered",
+      "status": "PASS",
+      "details": "Observed 1 occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "prohibited_event:authentication_attempt",
+      "status": "PASS",
+      "details": "Observed 0 prohibited occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "prohibited_event:ownership_verified",
+      "status": "PASS",
+      "details": "Observed 0 prohibited occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "prohibited_event:block_removed",
+      "status": "PASS",
+      "details": "Observed 0 prohibited occurrence(s)",
+      "required": true
+    },
+    {
+      "name": "suspected_fraud:no_authentication",
+      "status": "PASS",
+      "details": "Authentication must not occur",
+      "required": true
+    },
+    {
+      "name": "suspected_fraud:transfer",
+      "status": "PASS",
+      "details": "Immediate specialist transfer required",
+      "required": true
+    }
+  ],
+  "metrics": {
+    "llm_calls": 1,
+    "input_tokens": null,
+    "input_cache_hit_tokens": null,
+    "input_cache_miss_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "estimated_api_cost_usd": null,
+    "pricing_model": null,
+    "pricing_source": "https://api-docs.deepseek.com/quick_start/pricing",
+    "pricing_verified_date": "2026-08-06",
+    "tool_calls": 1,
+    "clarification_turns": 0,
+    "retries": 0,
+    "llm_latency_ms": 0.007,
+    "tool_latency_ms": 0.002,
+    "total_latency_ms": 0.266,
+    "specialist_transfer_occurred": true,
+    "non_fraud_transfer_occurred": false,
+    "thresholds": {
+      "max_llm_calls": 10,
+      "max_clarification_turns": 3,
+      "max_tool_calls": 3,
+      "max_total_latency_ms": 15000
+    },
+    "threshold_results": {
+      "llm_calls": true,
+      "clarification_turns": true,
+      "tool_calls": true,
+      "total_latency_ms": true
+    }
+  },
+  "overall_result": "PASS",
+  "failure_reasons": []
+}

@@ -1,0 +1,161 @@
+[
+  {
+    "scenario_id": "successful_block_removal",
+    "description": "Eligible customer recognizes the latest transaction and the block is removed.",
+    "initial_state": {"card_id": "CARD-001", "card_status": "fraud_blocked"},
+    "customer_inputs": ["Those alert purchases were mine. Please unblock my card.", "9000000000001001", "1990-01-15", "yes"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000001001", "date_of_birth": "1990-01-15", "recognition": {"TX-001-A": "yes"}},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "active", "selected_card_id": "CARD-001", "block_removed": true,
+      "transfer_destination": null, "expected_customer_id": "CUST-001", "expected_transaction_id": "TX-001-A",
+      "successful_removal_checks": true,
+      "required_events": ["route_selected", "authentication_success", "ownership_verified", "transaction_retrieved", "transaction_recognized", "eligibility_approved", "block_removed", "final_state_verified"],
+      "prohibited_events": ["authentication_failed", "specialist_transfer_triggered"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 10, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "ambiguous_request_clarified",
+    "description": "A generic card request requires one clarification before block-removal routing.",
+    "initial_state": {"card_id": "CARD-010", "card_status": "fraud_blocked"},
+    "customer_inputs": ["Can you help me with my card?", "My card was declined after an alert, but the purchase was mine and I want it unblocked.", "yes", "9000000000010010", "1991-10-26", "yes"],
+    "classifications": [
+      {"intent": "UNCLEAR", "service": "needs clarification", "department": "Fraud"},
+      {"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}
+    ],
+    "answers": {"clarifications": ["My card was declined after an alert, but the purchase was mine and I want it unblocked."], "card_number": "9000000000010010", "date_of_birth": "1991-10-26", "recognition": {"TX-010-A": "yes"}},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "active", "selected_card_id": "CARD-010", "block_removed": true,
+      "transfer_destination": null, "expected_customer_id": "CUST-010", "expected_transaction_id": "TX-010-A", "successful_removal_checks": true,
+      "required_events": ["clarification_requested", "authentication_success", "ownership_verified", "transaction_recognized", "eligibility_approved", "block_removed", "final_state_verified"],
+      "prohibited_events": ["specialist_transfer_triggered"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 10, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "suspected_fraud",
+    "description": "Unrecognized activity is transferred immediately without authentication.",
+    "initial_state": {"card_id": "CARD-003", "card_status": "fraud_blocked"},
+    "customer_inputs": ["I do not recognize this purchase. Someone may have stolen my card details."],
+    "classifications": [{"intent": "REPORT_FRAUD", "service": "suspected fraud", "department": "Fraud"}],
+    "answers": {},
+    "expected": {
+      "route": "REPORT_FRAUD", "final_card_status": "fraud_blocked", "selected_card_id": null, "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "account_details_disclosed": false,
+      "required_events": ["route_selected", "specialist_transfer_triggered"],
+      "prohibited_events": ["authentication_attempt", "ownership_verified", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 3, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "non_fraud_request",
+    "description": "A rewards request is offered and transferred to the corresponding team.",
+    "initial_state": {},
+    "customer_inputs": ["How many rewards points do I have?", "Please transfer me."],
+    "classifications": [{"intent": "OTHER", "service": "rewards points", "department": "Rewards"}],
+    "response_meanings": {"please transfer me.": "AFFIRMATIVE"},
+    "answers": {"department_transfer": "Please transfer me."},
+    "expected": {
+      "route": "NON_FRAUD", "final_card_status": null, "selected_card_id": null, "block_removed": false,
+      "transfer_destination": "Rewards", "account_details_disclosed": false,
+      "required_events": ["route_selected", "department_transfer_offered", "department_transfer_confirmation", "non_fraud_transfer_triggered"],
+      "prohibited_events": ["authentication_attempt", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 3, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "authentication_failure_wrong_dob",
+    "description": "A valid card with an incorrect DOB fails the single authentication attempt.",
+    "initial_state": {"card_id": "CARD-001", "card_status": "fraud_blocked"},
+    "customer_inputs": ["Please unblock my card; the transaction was mine.", "9000000000001001", "1900-01-01"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000001001", "date_of_birth": "1900-01-01"},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "fraud_blocked", "selected_card_id": null, "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "account_details_disclosed": false,
+      "required_events": ["authentication_attempt", "authentication_failed", "specialist_transfer_triggered"],
+      "prohibited_events": ["ownership_verified", "transaction_retrieved", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 4, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "authentication_failure_unknown_card",
+    "description": "An unknown card number fails authentication and discloses no account data.",
+    "initial_state": {"card_id": "CARD-001", "card_status": "fraud_blocked"},
+    "customer_inputs": ["Please remove the block.", "9000000000099999", "1990-01-15"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000099999", "date_of_birth": "1990-01-15"},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "fraud_blocked", "selected_card_id": null, "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "account_details_disclosed": false,
+      "required_events": ["authentication_attempt", "authentication_failed", "specialist_transfer_triggered"],
+      "prohibited_events": ["ownership_verified", "transaction_retrieved", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 4, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "authentication_failure_card_dob_mismatch",
+    "description": "A real card paired with another customer's DOB is treated as authentication failure.",
+    "initial_state": {"card_id": "CARD-001", "card_status": "fraud_blocked"},
+    "customer_inputs": ["Unblock my card; I made the transaction.", "9000000000001001", "1985-02-20"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000001001", "date_of_birth": "1985-02-20"},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "fraud_blocked", "selected_card_id": null, "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "account_details_disclosed": false,
+      "required_events": ["authentication_attempt", "authentication_failed", "specialist_transfer_triggered"],
+      "prohibited_events": ["ownership_verified", "transaction_retrieved", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 4, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "transaction_not_recognized",
+    "description": "Authentication succeeds, but the customer rejects the latest transaction.",
+    "initial_state": {"card_id": "CARD-003", "card_status": "fraud_blocked"},
+    "customer_inputs": ["I want to review the alert and unblock my card.", "9000000000003003", "1978-03-12", "No, that was not mine."],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "response_meanings": {"no, that was not mine.": "NEGATIVE"},
+    "answers": {"card_number": "9000000000003003", "date_of_birth": "1978-03-12", "recognition": {"TX-003-A": "No, that was not mine."}},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "fraud_blocked", "selected_card_id": "CARD-003", "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "expected_customer_id": "CUST-003", "expected_transaction_id": "TX-003-A",
+      "required_events": ["authentication_success", "ownership_verified", "transaction_retrieved", "transaction_not_recognized", "specialist_transfer_triggered"],
+      "prohibited_events": ["eligibility_approved", "block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 8, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "removal_ineligible",
+    "description": "The latest transaction is recognized, but the fraud case is not eligible for automatic removal.",
+    "initial_state": {"card_id": "CARD-004", "card_status": "fraud_blocked"},
+    "customer_inputs": ["I made that purchase. Remove the block.", "9000000000004004", "1992-04-08", "yes"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000004004", "date_of_birth": "1992-04-08", "recognition": {"TX-004-A": "yes"}},
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "fraud_blocked", "selected_card_id": "CARD-004", "block_removed": false,
+      "transfer_destination": "FRAUD_SPECIALIST", "expected_customer_id": "CUST-004", "expected_transaction_id": "TX-004-A",
+      "required_events": ["authentication_success", "ownership_verified", "transaction_recognized", "eligibility_checked", "eligibility_rejected", "specialist_transfer_triggered"],
+      "prohibited_events": ["block_removed"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 9, "max_clarification_turns": 3}
+    }
+  },
+  {
+    "scenario_id": "hidden_workflow_failure",
+    "description": "Demo-only flaw verifies an older transaction but still reaches an active final state.",
+    "initial_state": {"card_id": "CARD-002", "card_status": "fraud_blocked"},
+    "customer_inputs": ["All those purchases were mine. Unblock my card.", "9000000000002002", "1985-02-20", "yes"],
+    "classifications": [{"intent": "BLOCK_REMOVAL", "next_action": "START_AUTHENTICATION", "service": "fraud block removal", "department": "Fraud"}],
+    "answers": {"card_number": "9000000000002002", "date_of_birth": "1985-02-20", "recognition": {"TX-002-A": "yes", "TX-002-B": "yes"}},
+    "demo_only_flawed": true,
+    "expected": {
+      "route": "BLOCK_REMOVAL", "final_card_status": "active", "selected_card_id": "CARD-002", "block_removed": true,
+      "transfer_destination": null, "expected_customer_id": "CUST-002", "expected_transaction_id": "TX-002-A",
+      "code_check_profile": "final_state_only",
+      "required_events": ["authentication_success", "ownership_verified", "transaction_retrieved", "transaction_recognized", "eligibility_approved", "block_removed", "final_state_verified"],
+      "required_event_details": [{"name": "transaction_recognized", "field": "transaction_id", "expected": "TX-002-A"}],
+      "prohibited_events": ["specialist_transfer_triggered"],
+      "metric_thresholds": {"max_llm_calls": 10, "max_tool_calls": 10, "max_clarification_turns": 3}
+    }
+  }
+]

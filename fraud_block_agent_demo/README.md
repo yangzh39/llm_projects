@@ -81,27 +81,94 @@ For example, a GIC question can produce a natural offer to transfer to Investmen
 }
 ```
 
-## Run 2: reproducible evaluation
+## Run 2: reproducible evaluation benchmark
 
 ```bash
 python3 fraud_block_agent_demo/run_evaluation.py
 ```
 
-This runner uses recorded intent classifications, so it needs no API key and produces stable evaluation results. Its report prints every outcome check, trajectory validation, safety gate, and efficiency measurement. Run one case with:
+The default benchmark uses recorded model outputs, so it needs no API key and produces stable results across ten independent scenarios. A fresh in-memory mock database is loaded before every scenario. Each run saves a structured JSON report under `evaluation/outputs/` and prints these sections:
+
+- `SCENARIO` and `AGENT RESULT`;
+- `CODE CHECKS` for objective route, state, transfer, authentication, ownership, transaction, eligibility, removal, and final-state results;
+- `TRACE CHECKS` for required steps, prohibited actions, and ordering constraints;
+- `METRICS` for model calls, tokens, estimated cost, tool calls, clarification turns, retries, transfers, and latency;
+- `OVERALL DECISION`, which fails when any required code or trace check fails.
+
+Run one deterministic case with:
 
 ```bash
-python3 fraud_block_agent_demo/run_evaluation.py --scenario hidden_failure
+python3 fraud_block_agent_demo/run_evaluation.py --scenario successful_block_removal
 ```
 
-The hidden failure ends with an active card and a convincing response, but the independent evaluator detects that an older transaction was verified while the agent claimed it had verified the newest transaction:
+Run exactly one bounded live DeepSeek session with:
+
+```bash
+python3 fraud_block_agent_demo/run_evaluation.py --scenario successful_block_removal --live
+```
+
+Live mode requires an explicit scenario and enforces a hard maximum of 10 API calls. The full benchmark cannot be run with `--live`, preventing accidental multi-scenario API spending.
+
+### Four evaluation methods
+
+1. **Deterministic code checks** compare objective state and actions with scenario expectations. They answer questions such as: Was the correct card selected? Did the block-removal tool succeed? Is the final card state active?
+2. **Trace-based checks** independently inspect the process. A correct final state can still fail if authentication, recognition, eligibility, or final verification occurred in the wrong order or was skipped.
+3. **Operational metrics** measure API and tool usage. Recorded-model benchmark runs report token usage and cost as `None`; live runs use usage metadata returned by DeepSeek when available.
+4. **Validation-set execution** runs ten reusable scenarios covering success, clarification, routing, authentication failures, transaction rejection, ineligibility, and a hidden workflow failure.
+
+### Token and API-cost calculation
+
+Pricing is configured in `evaluation/pricing.py`, with its official source and verification date. The current configuration was verified on 2026-08-06 against DeepSeek's official pricing page. Because prices can change, verify the configuration before later use.
+
+The live cost estimate is:
 
 ```text
-OUTCOME:          PASS
-TRAJECTORY:       FAIL
-SAFETY GATES:     FAIL
-CRITICAL FAILURE: YES
-OVERALL RESULT:   FAIL
+cache-hit input tokens × cache-hit input rate
++ cache-miss input tokens × cache-miss input rate
++ output tokens × output rate
 ```
+
+When the API does not provide the required usage metadata or the configured model has no matching price, the estimate is `None` rather than inferred.
+
+### Validation scenarios
+
+The reusable set is stored in `evaluation/scenarios.json` and contains:
+
+1. successful block removal;
+2. ambiguous request requiring clarification;
+3. suspected fraud;
+4. non-fraud transfer;
+5. incorrect-DOB authentication failure;
+6. unknown-card authentication failure;
+7. card/DOB mismatch treated as authentication failure;
+8. transaction not recognized;
+9. removal-ineligible case;
+10. hidden workflow failure.
+
+Authentication remains a single attempt by design. Invalid card, DOB, or customer combinations fail authentication, disclose no account details, and transfer to a fraud specialist.
+
+### Core presentation example
+
+Run the hidden failure with:
+
+```bash
+python3 fraud_block_agent_demo/run_evaluation.py --scenario hidden_workflow_failure
+```
+
+The demo-only flawed path ends with an active card and a convincing response, but the independent trace evaluator detects that an older transaction was recognized instead of the required newest transaction:
+
+```text
+CODE CHECKS:       PASS
+TRACE CHECKS:      FAIL
+OVERALL RESULT:    FAIL
+```
+
+Recommended live teaching sequence:
+
+1. Run `successful_block_removal` and show both check types passing.
+2. Run `hidden_workflow_failure` and compare its successful final state with the failed trace check.
+3. Run the full deterministic benchmark.
+4. Run one live `successful_block_removal` session and compare API cost, latency, and call counts.
 
 ## Fake customer cheat sheet
 
@@ -135,12 +202,22 @@ fraud_block_agent_demo/
 ├── evaluator.py               # independent trace evaluation
 ├── reporting.py               # terminal and JSON output helpers
 ├── scenarios.py               # recorded evaluation fixtures
+├── evaluation/
+│   ├── harness.py             # execute, reset, grade, measure, and save
+│   ├── scenarios.json         # ten-scenario validation set
+│   ├── trace.py               # structured privacy-aware tracing
+│   ├── metrics.py             # operational metrics and cost calculation
+│   ├── pricing.py             # sourced, configurable DeepSeek prices
+│   ├── report.py              # concise terminal output
+│   ├── graders/               # deterministic and trace-based checks
+│   └── outputs/               # structured per-scenario reports
 ├── data/
 │   ├── customers.json         # identity table
 │   ├── cards.json             # card ownership and state table
 │   ├── fraud_cases.json       # eligibility table
 │   └── transactions.json      # flagged transaction table
 ├── tests/test_demo.py
+├── tests/test_evaluation.py
 └── traces/                    # generated structured traces
 ```
 

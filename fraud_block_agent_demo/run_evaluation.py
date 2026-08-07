@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from agent import FraudBlockAgent
+from evaluation.benchmark import load_scenarios
+from evaluation.harness import run_all as run_benchmark_all
+from evaluation.harness import run_scenario as run_benchmark_scenario
+from evaluation.report import print_benchmark_summary, print_scenario_report
 from evaluator import evaluate
 from reporting import print_report, print_trace, save_trace
 from scenarios import EVALUATION_CASES
@@ -137,12 +141,25 @@ def run_case(name: str) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run deterministic fraud-agent evaluations.")
-    parser.add_argument("--scenario", choices=["all", *EVALUATION_CASES], default="all")
+    benchmark_scenarios = load_scenarios()
+    parser = argparse.ArgumentParser(description="Run the fraud-agent evaluation benchmark.")
+    parser.add_argument("--scenario", choices=["all", *benchmark_scenarios], default="all")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Use DeepSeek for one selected scenario, with a hard maximum of 10 API calls.",
+    )
     args = parser.parse_args()
-    names = list(EVALUATION_CASES) if args.scenario == "all" else [args.scenario]
-    for name in names:
-        run_case(name)
+    if args.live and args.scenario == "all":
+        parser.error("--live requires one explicit --scenario to prevent unexpected API spending")
+    if args.scenario == "all":
+        reports = run_benchmark_all()
+        for report in reports:
+            print_scenario_report(report)
+        print_benchmark_summary(reports)
+        return
+    report = run_benchmark_scenario(args.scenario, live=args.live)
+    print_scenario_report(report)
 
 
 if __name__ == "__main__":

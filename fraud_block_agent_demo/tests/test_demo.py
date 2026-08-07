@@ -24,7 +24,7 @@ class FraudBlockDemoTests(unittest.TestCase):
         self.assertNotIn("transfer_to_department", tools)
         self.assertIn("remove_fraud_block", tools)
         self.assertEqual(2, len(intent_calls))
-        self.assertEqual("I want to remove the block", block_confirmation[0]["input"])
+        self.assertEqual("I want to remove the block", block_confirmation[0]["input"]["message"])
         self.assertEqual("PASS", payload["evaluation"]["overall_result"])
 
     def test_generic_request_can_be_clarified(self):

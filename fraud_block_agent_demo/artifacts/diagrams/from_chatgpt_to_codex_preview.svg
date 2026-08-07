@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <style>
+    .sans { font-family: Arial, Helvetica, sans-serif; }
+    .ink { fill: #172033; }
+    .muted { fill: #5f6b7a; }
+    .blue { fill: #2563a8; }
+    .cyan { fill: #087ea4; }
+    .green { fill: #168653; }
+    .orange { fill: #b65f00; }
+  </style>
+
+  <!-- Header -->
+  <text x="48" y="82" class="sans ink" font-size="58" font-weight="700">From ChatGPT to Codex</text>
+  <text x="48" y="130" class="sans muted" font-size="25" font-style="italic">Scaling improves intelligence. Engineering turns intelligence into action.</text>
+  <line x1="0" y1="158" x2="1600" y2="158" stroke="#53c7ed" stroke-width="6"/>
+
+  <!-- Capability drivers -->
+  <text x="48" y="205" class="sans blue" font-size="18" font-weight="700">WHAT MAKES THE MODEL MORE CAPABLE?</text>
+
+  <g class="sans">
+    <rect x="48" y="226" width="282" height="76" rx="14" fill="#f3f8fc" stroke="#aac3e4" stroke-width="2"/>
+    <circle cx="83" cy="264" r="18" fill="#dceafb"/>
+    <text x="83" y="271" class="blue" font-size="19" font-weight="700" text-anchor="middle">1</text>
+    <text x="112" y="258" class="ink" font-size="17" font-weight="700">Compute &amp; scale</text>
+    <text x="112" y="281" class="muted" font-size="14">Parameters, training compute</text>
+
+    <rect x="354" y="226" width="282" height="76" rx="14" fill="#f7fcf9" stroke="#a9d8be" stroke-width="2"/>
+    <circle cx="389" cy="264" r="18" fill="#e1f5e9"/>
+    <text x="389" y="271" class="green" font-size="19" font-weight="700" text-anchor="middle">2</text>
+    <text x="418" y="258" class="ink" font-size="17" font-weight="700">Better training data</text>
+    <text x="418" y="281" class="muted" font-size="14">Quality, diversity, feedback</text>
+
+    <rect x="660" y="226" width="282" height="76" rx="14" fill="#fff7e8" stroke="#e4b264" stroke-width="2"/>
+    <circle cx="695" cy="264" r="18" fill="#fce9c9"/>
+    <text x="695" y="271" class="orange" font-size="19" font-weight="700" text-anchor="middle">3</text>
+    <text x="724" y="258" class="ink" font-size="17" font-weight="700">Model architecture</text>
+    <text x="724" y="281" class="muted" font-size="14">Efficiency and longer context</text>
+
+    <rect x="966" y="226" width="282" height="76" rx="14" fill="#f8f5fc" stroke="#c7afe0" stroke-width="2"/>
+    <circle cx="1001" cy="264" r="18" fill="#eee3f7"/>
+    <text x="1001" y="271" fill="#8052aa" font-size="19" font-weight="700" text-anchor="middle">4</text>
+    <text x="1030" y="258" class="ink" font-size="17" font-weight="700">Post-training</text>
+    <text x="1030" y="281" class="muted" font-size="14">Instruction following, alignment</text>
+
+    <rect x="1272" y="226" width="280" height="76" rx="14" fill="#fff5f1" stroke="#dfaa95" stroke-width="2"/>
+    <circle cx="1307" cy="264" r="18" fill="#f8e4dc"/>
+    <text x="1307" y="271" fill="#ad5c3e" font-size="19" font-weight="700" text-anchor="middle">5</text>
+    <text x="1336" y="258" class="ink" font-size="17" font-weight="700">Inference reasoning</text>
+    <text x="1336" y="281" class="muted" font-size="14">More work on hard problems</text>
+  </g>
+
+  <!-- Main evolution -->
+  <text x="48" y="348" class="sans blue" font-size="18" font-weight="700">THE UNLOCK: AUGMENT THE MODEL WITH A SYSTEM AROUND IT</text>
+
+  <!-- Foundation LLM -->
+  <rect x="48" y="375" width="338" height="302" rx="22" fill="#f8faff" stroke="#4b79b5" stroke-width="3"/>
+  <rect x="75" y="404" width="82" height="64" rx="17" fill="#e8f1fb" stroke="#4b79b5" stroke-width="2"/>
+  <path d="M100 468 L90 486 L117 469" fill="#e8f1fb" stroke="#4b79b5" stroke-width="2"/>
+  <line x1="94" y1="427" x2="139" y2="427" stroke="#2563a8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="94" y1="443" x2="128" y2="443" stroke="#2563a8" stroke-width="4" stroke-linecap="round"/>
+  <text x="181" y="421" class="sans blue" font-size="16" font-weight="700">FOUNDATION LLM</text>
+  <text x="181" y="454" class="sans ink" font-size="27" font-weight="700">Think &amp; communicate</text>
+
+  <line x1="76" y1="505" x2="358" y2="505" stroke="#d8dee8" stroke-width="2"/>
+  <circle cx="91" cy="542" r="7" fill="#4b79b5"/><text x="112" y="549" class="sans ink" font-size="18">Understand language</text>
+  <circle cx="91" cy="582" r="7" fill="#4b79b5"/><text x="112" y="589" class="sans ink" font-size="18">Reason over context</text>
+  <circle cx="91" cy="622" r="7" fill="#4b79b5"/><text x="112" y="629" class="sans ink" font-size="18">Generate a response</text>
+  <rect x="75" y="648" width="284" height="40" rx="10" fill="#e8f1fb"/>
+  <text x="217" y="674" class="sans blue" font-size="17" font-weight="700" text-anchor="middle">OUTPUT: WORDS</text>
+
+  <!-- Plus -->
+  <circle cx="425" cy="526" r="25" fill="#ffffff" stroke="#53c7ed" stroke-width="3"/>
+  <line x1="412" y1="526" x2="438" y2="526" stroke="#087ea4" stroke-width="4"/>
+  <line x1="425" y1="513" x2="425" y2="539" stroke="#087ea4" stroke-width="4"/>
+
+  <!-- Augmentation layer -->
+  <rect x="466" y="375" width="590" height="302" rx="22" fill="#f3fbfe" stroke="#20a7d3" stroke-width="3"/>
+  <text x="494" y="411" class="sans cyan" font-size="16" font-weight="700">AUGMENTATION LAYER</text>
+  <text x="494" y="448" class="sans ink" font-size="27" font-weight="700">Give the model context and capabilities</text>
+
+  <rect x="494" y="478" width="252" height="74" rx="13" fill="#ffffff" stroke="#aac3e4" stroke-width="2"/>
+  <circle cx="527" cy="515" r="17" fill="#e8f1fb"/>
+  <path d="M519 514 h16 M527 506 v16" stroke="#2563a8" stroke-width="3"/>
+  <text x="557" y="508" class="sans blue" font-size="17" font-weight="700">Context &amp; memory</text>
+  <text x="557" y="532" class="sans muted" font-size="14">Relevant knowledge and state</text>
+
+  <rect x="770" y="478" width="258" height="74" rx="13" fill="#ffffff" stroke="#a9d8be" stroke-width="2"/>
+  <circle cx="803" cy="515" r="17" fill="#e1f5e9"/>
+  <path d="M796 515 h14 M803 508 v14" stroke="#168653" stroke-width="3"/>
+  <text x="833" y="508" class="sans green" font-size="17" font-weight="700">Tools &amp; APIs</text>
+  <text x="833" y="532" class="sans muted" font-size="14">Search, calculate, transact</text>
+
+  <rect x="494" y="571" width="252" height="74" rx="13" fill="#ffffff" stroke="#e4b264" stroke-width="2"/>
+  <circle cx="527" cy="608" r="17" fill="#fce9c9"/>
+  <text x="527" y="614" class="sans orange" font-size="17" font-weight="700" text-anchor="middle">&gt;_</text>
+  <text x="557" y="601" class="sans orange" font-size="17" font-weight="700">Runtime &amp; terminal</text>
+  <text x="557" y="625" class="sans muted" font-size="14">Execute code and commands</text>
+
+  <rect x="770" y="571" width="258" height="74" rx="13" fill="#ffffff" stroke="#c7afe0" stroke-width="2"/>
+  <circle cx="803" cy="608" r="17" fill="#eee3f7"/>
+  <path d="M795 608 l6 6 11-14" fill="none" stroke="#8052aa" stroke-width="3"/>
+  <text x="833" y="601" fill="#8052aa" class="sans" font-size="17" font-weight="700">Orchestration</text>
+  <text x="833" y="625" class="sans muted" font-size="14">Planning, controls, guardrails</text>
+
+  <!-- Arrow -->
+  <line x1="1058" y1="526" x2="1122" y2="526" stroke="#168653" stroke-width="5"/>
+  <polygon points="1122,526 1103,514 1103,538" fill="#168653"/>
+
+  <!-- Agentic system -->
+  <rect x="1140" y="375" width="412" height="302" rx="22" fill="#f7fcf9" stroke="#2f9a67" stroke-width="3"/>
+  <text x="1170" y="411" class="sans green" font-size="16" font-weight="700">AGENTIC AI SYSTEM</text>
+  <text x="1170" y="448" class="sans ink" font-size="27" font-weight="700">Reason, act, and adapt</text>
+
+  <!-- loop -->
+  <circle cx="1346" cy="553" r="87" fill="#ffffff" stroke="#a9d8be" stroke-width="2" stroke-dasharray="6 5"/>
+  <circle cx="1346" cy="553" r="42" fill="#e1f5e9"/>
+  <text x="1346" y="548" class="sans green" font-size="15" font-weight="700" text-anchor="middle">GOAL</text>
+  <text x="1346" y="569" class="sans ink" font-size="13" text-anchor="middle">completion</text>
+
+  <rect x="1311" y="466" width="70" height="28" rx="8" fill="#e8f1fb"/><text x="1346" y="485" class="sans blue" font-size="13" font-weight="700" text-anchor="middle">UNDERSTAND</text>
+  <rect x="1415" y="539" width="58" height="28" rx="8" fill="#fff7e8"/><text x="1444" y="558" class="sans orange" font-size="13" font-weight="700" text-anchor="middle">PLAN</text>
+  <rect x="1318" y="624" width="56" height="28" rx="8" fill="#edf9f2"/><text x="1346" y="643" class="sans green" font-size="13" font-weight="700" text-anchor="middle">ACT</text>
+  <rect x="1217" y="539" width="68" height="28" rx="8" fill="#f8f5fc"/><text x="1251" y="558" fill="#8052aa" class="sans" font-size="13" font-weight="700" text-anchor="middle">OBSERVE</text>
+
+  <path d="M1383 488 C1422 500 1440 516 1445 538" fill="none" stroke="#7f8ea3" stroke-width="2"/>
+  <polygon points="1445,538 1438,529 1449,530" fill="#7f8ea3"/>
+  <path d="M1445 568 C1436 601 1405 624 1375 636" fill="none" stroke="#7f8ea3" stroke-width="2"/>
+  <polygon points="1375,636 1384,628 1386,639" fill="#7f8ea3"/>
+  <path d="M1317 638 C1281 626 1255 599 1250 568" fill="none" stroke="#7f8ea3" stroke-width="2"/>
+  <polygon points="1250,568 1257,578 1246,577" fill="#7f8ea3"/>
+  <path d="M1251 538 C1261 510 1285 491 1310 482" fill="none" stroke="#7f8ea3" stroke-width="2"/>
+  <polygon points="1310,482 1301,490 1299,479" fill="#7f8ea3"/>
+
+  <!-- Takeaway -->
+  <rect x="48" y="732" width="1504" height="112" rx="18" fill="#172033"/>
+  <text x="80" y="770" fill="#53c7ed" class="sans" font-size="16" font-weight="700">THE TRANSITION</text>
+  <text x="80" y="810" fill="#ffffff" class="sans" font-size="25" font-weight="700">Model intelligence determines what AI can reason about.</text>
+  <text x="846" y="810" fill="#53d89a" class="sans" font-size="25" font-weight="700">Tools + runtime determine what it can do.</text>
+  <text x="80" y="832" fill="#a8b4c7" class="sans" font-size="14">This is the bridge from conversational AI to systems that can complete work across software, devices, and real-world workflows.</text>
+</svg>

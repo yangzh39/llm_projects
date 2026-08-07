@@ -9,13 +9,13 @@ from typing import Any
 
 def print_trace(trace: list[dict[str, Any]]) -> None:
     for event in trace:
-        if event["type"] == "llm_call":
+        if event.get("type") == "llm_call":
             chatbot_message = event["output"].get("chatbot_message", {})
             if event.get("purpose") == "customer_response_interpretation":
                 print(f"  MODEL response interpretation -> {chatbot_message.get('response_meaning')} / {chatbot_message.get('next_action')}")
             else:
                 print(f"  MODEL conversational routing -> {chatbot_message.get('goal')} / {chatbot_message.get('next_action')}")
-        elif event["type"] == "tool_call":
+        elif event.get("type") == "tool_call":
             output = event["output"]
             result = "ok"
             for key in ("authenticated", "eligible", "removed", "escalated", "transferred", "status"):

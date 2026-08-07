@@ -2,10 +2,43 @@
   "run": "unknown_card",
   "events": [
     {
-      "type": "llm_call",
-      "purpose": "intent_classification",
-      "attempt": 1,
-      "input": "The alert was for my purchase. Please unblock my card.",
+      "sequence": 1,
+      "timestamp": "2026-08-06T07:49:13.420149+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "opening_message",
+        "message": "The alert was for my purchase. Please unblock my card."
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2026-08-06T07:49:13.420207+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "The alert was for my purchase. Please unblock my card.",
+        "context": {}
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2026-08-06T07:49:13.420249+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "The alert was for my purchase. Please unblock my card.",
+        "context": {}
+      },
       "output": {
         "human_message": "I understand that The alert was for my purchase. Please unblock my card.. Is that correct?",
         "chatbot_message": {
@@ -17,9 +50,27 @@
           "collected_facts": [],
           "reason": "Recorded result for reproducible evaluation"
         }
-      }
+      },
+      "duration_ms": 0.01,
+      "type": "llm_call",
+      "purpose": "intent_classification",
+      "attempt": 1,
+      "context": {}
     },
     {
+      "sequence": 4,
+      "timestamp": "2026-08-06T07:49:13.420300+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "attempt": 1,
+        "goal": "BLOCK_REMOVAL",
+        "service": "Block Removal",
+        "action": "CONFIRM_BLOCK_REMOVAL"
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "intent_interpreted",
       "attempt": 1,
@@ -28,12 +79,65 @@
       "action": "CONFIRM_BLOCK_REMOVAL"
     },
     {
-      "type": "llm_call",
-      "purpose": "customer_response_interpretation",
-      "attempt": 1,
-      "input": "yes",
-      "context": {
-        "question_type": "block_removal_intent_confirmation"
+      "sequence": 5,
+      "timestamp": "2026-08-06T07:49:13.420318+00:00",
+      "event_type": "workflow_step",
+      "name": "route_selected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "route": "BLOCK_REMOVAL",
+        "service": "Block Removal",
+        "action": "CONFIRM_BLOCK_REMOVAL"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "route_selected",
+      "route": "BLOCK_REMOVAL",
+      "service": "Block Removal",
+      "action": "CONFIRM_BLOCK_REMOVAL"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2026-08-06T07:49:13.420336+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "block_removal_intent_confirmation",
+        "message": "yes"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 7,
+      "timestamp": "2026-08-06T07:49:13.420346+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "yes",
+        "context": {
+          "question_type": "block_removal_intent_confirmation"
+        }
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2026-08-06T07:49:13.420359+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "yes",
+        "context": {
+          "question_type": "block_removal_intent_confirmation"
+        }
       },
       "output": {
         "human_message": "Thank you. I\u2019ll route your latest request correctly.",
@@ -43,51 +147,188 @@
           "interpreted_response": "yes",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
+      },
+      "duration_ms": 0.002,
+      "type": "llm_call",
+      "purpose": "customer_response_interpretation",
+      "attempt": 1,
+      "context": {
+        "question_type": "block_removal_intent_confirmation"
       }
     },
     {
+      "sequence": 9,
+      "timestamp": "2026-08-06T07:49:13.420390+00:00",
+      "event_type": "workflow_step",
+      "name": "customer_response_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "question_type": "block_removal_intent_confirmation",
+        "meaning": "AFFIRMATIVE"
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "customer_response_interpreted",
       "question_type": "block_removal_intent_confirmation",
       "meaning": "AFFIRMATIVE"
     },
     {
+      "sequence": 10,
+      "timestamp": "2026-08-06T07:49:13.420426+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_confirmation",
+      "status": "success",
+      "input": {},
+      "output": {
+        "attempt": 1,
+        "confirmed": true
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "intent_confirmation",
       "attempt": 1,
       "confirmed": true
     },
     {
+      "sequence": 11,
+      "timestamp": "2026-08-06T07:49:13.420516+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_detected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "intent": "BLOCK_REMOVAL",
+        "attempts": 1
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "intent_detected",
       "intent": "BLOCK_REMOVAL",
       "attempts": 1
     },
     {
-      "type": "tool_call",
-      "tool": "authenticate_customer",
+      "sequence": 12,
+      "timestamp": "2026-08-06T07:49:13.420600+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
       "input": {
-        "card_number": "**** 9999",
-        "date_of_birth": "<redacted>"
+        "kind": "card_number",
+        "card_number_provided": true,
+        "card_number": "[REDACTED]"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 13,
+      "timestamp": "2026-08-06T07:49:13.420618+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "date_of_birth",
+        "date_of_birth_provided": true,
+        "date_of_birth": "[REDACTED]"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 14,
+      "timestamp": "2026-08-06T07:49:13.420631+00:00",
+      "event_type": "workflow_step",
+      "name": "authentication_attempt",
+      "status": "success",
+      "input": {},
+      "output": {
+        "card_number_provided": true,
+        "date_of_birth_provided": true
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "authentication_attempt",
+      "card_number_provided": true,
+      "date_of_birth_provided": true
+    },
+    {
+      "sequence": 15,
+      "timestamp": "2026-08-06T07:49:13.420657+00:00",
+      "event_type": "tool_call",
+      "name": "authenticate_customer",
+      "status": "failed",
+      "input": {
+        "card_number": "[REDACTED]",
+        "date_of_birth": "[REDACTED]"
       },
       "output": {
         "authenticated": false,
         "customer_id": null,
         "card_id": null
-      }
+      },
+      "duration_ms": 0.011,
+      "type": "tool_call",
+      "tool": "authenticate_customer"
     },
     {
-      "type": "tool_call",
-      "tool": "escalate_to_human",
+      "sequence": 16,
+      "timestamp": "2026-08-06T07:49:13.420675+00:00",
+      "event_type": "workflow_step",
+      "name": "authentication_failed",
+      "status": "failed",
+      "input": {},
+      "output": {},
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "authentication_failed"
+    },
+    {
+      "sequence": 17,
+      "timestamp": "2026-08-06T07:49:13.420698+00:00",
+      "event_type": "workflow_step",
+      "name": "specialist_transfer_triggered",
+      "status": "success",
+      "input": {},
+      "output": {
+        "destination": "FRAUD_SPECIALIST",
+        "reason": "Authentication failed; no account data disclosed"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "specialist_transfer_triggered",
+      "destination": "FRAUD_SPECIALIST",
+      "reason": "Authentication failed; no account data disclosed"
+    },
+    {
+      "sequence": 18,
+      "timestamp": "2026-08-06T07:49:13.420713+00:00",
+      "event_type": "tool_call",
+      "name": "escalate_to_human",
+      "status": "success",
       "input": {
         "reason": "Authentication failed; no account data disclosed"
       },
       "output": {
         "escalated": true,
         "queue": "mock_fraud_specialist"
-      }
+      },
+      "duration_ms": 0.002,
+      "type": "tool_call",
+      "tool": "escalate_to_human"
     },
     {
+      "sequence": 19,
+      "timestamp": "2026-08-06T07:49:13.420725+00:00",
+      "event_type": "final_response",
+      "name": "final_response",
+      "status": "success",
+      "input": {},
+      "output": {
+        "message": "I could not verify your identity. No account details were accessed. I\u2019m transferring you to a specialist.",
+        "disposition": "escalated"
+      },
+      "duration_ms": 0.0,
       "type": "final_response",
       "message": "I could not verify your identity. No account details were accessed. I\u2019m transferring you to a specialist.",
       "disposition": "escalated"
@@ -100,7 +341,7 @@
     "efficiency": {
       "model_calls": 2,
       "tool_calls": 2,
-      "workflow_steps": 4,
+      "workflow_steps": 8,
       "repeated_tool_calls": 0,
       "unnecessary_calls": 0,
       "terminated_promptly_after_auth_failure": true
@@ -138,7 +379,7 @@
       },
       "trajectory_checks": {
         "intent_model_calls_within_three_attempt_limit": "Observed 1 intent-classification call(s); allowed range is 1 to 3",
-        "authentication_before_disclosure": "Authentication event index=6; first account disclosure index=none",
+        "authentication_before_disclosure": "Authentication event index=14; first account disclosure index=none",
         "reported_fraud_routed_without_authentication": "Intent=BLOCK_REMOVAL; fraud escalation called=True; authentication called=True",
         "non_fraud_transfer_offered_and_consent_respected": "Intent=BLOCK_REMOVAL; offer observed=False; consent observed=False; transfer called=False",
         "most_recent_transaction_verified_before_removal": "Newest transaction ID=None; observed verified IDs=[]; removal attempted=False",

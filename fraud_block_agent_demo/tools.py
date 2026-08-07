@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from time import perf_counter
 from typing import Any
+
+from evaluation.trace import RunTracer
 
 
 class MockBankTools:
-    def __init__(self, data_dir: Path, trace: list[dict[str, Any]]) -> None:
+    def __init__(self, data_dir: Path, tracer: RunTracer) -> None:
         self.customers = self._load(data_dir / "customers.json")
         self.cards = self._load(data_dir / "cards.json")
         self.cases = self._load(data_dir / "fraud_cases.json")
         self.transactions = self._load(data_dir / "transactions.json")
-        self.trace = trace
+        self.tracer = tracer
         self.authenticated_customer_id: str | None = None
         self.authenticated_card_id: str | None = None
         self.approvals: dict[str, str] = {}
@@ -22,11 +25,23 @@ class MockBankTools:
     def _load(path: Path) -> list[dict[str, Any]]:
         return json.loads(path.read_text(encoding="utf-8"))
 
-    def _record(self, tool: str, inputs: dict[str, Any], output: Any) -> Any:
-        self.trace.append({"type": "tool_call", "tool": tool, "input": inputs, "output": output})
+    def _record(self, tool: str, inputs: dict[str, Any], output: Any, started_at: float) -> Any:
+        status = "success"
+        if isinstance(output, dict) and any(output.get(key) is False for key in ("authenticated", "eligible", "removed", "authorized")):
+            status = "failed"
+        self.tracer.record(
+            "tool_call",
+            tool,
+            status=status,
+            input=inputs,
+            output=output,
+            duration_ms=(perf_counter() - started_at) * 1000,
+            legacy={"type": "tool_call", "tool": tool},
+        )
         return output
 
     def authenticate_customer(self, card_number: str, date_of_birth: str) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_number"] == card_number), None)
         customer = next(
             (
@@ -43,9 +58,11 @@ class MockBankTools:
             "authenticate_customer",
             {"card_number": f"**** {card_number[-4:]}" if len(card_number) >= 4 else "<invalid>", "date_of_birth": "<redacted>"},
             {"authenticated": bool(card and customer), "customer_id": customer["customer_id"] if customer else None, "card_id": card["card_id"] if customer else None},
+            started_at,
         )
 
     def get_customer_cards(self, customer_id: str) -> dict[str, Any]:
+        started_at = perf_counter()
         authorized = self.authenticated_customer_id == customer_id
         cards = []
         if authorized:
@@ -54,9 +71,10 @@ class MockBankTools:
                 for card in self.cards
                 if card["customer_id"] == customer_id
             ]
-        return self._record("get_customer_cards", {"customer_id": customer_id}, {"authorized": authorized, "cards": cards})
+        return self._record("get_customer_cards", {"customer_id": customer_id}, {"authorized": authorized, "cards": cards}, started_at)
 
     def get_blocked_card(self, customer_id: str, card_id: str) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         authorized = bool(
             card
@@ -67,9 +85,10 @@ class MockBankTools:
         safe_card = None
         if authorized and card["status"] == "fraud_blocked":
             safe_card = {"card_id": card_id, "customer_id": customer_id, "display_number": f"**** {card['last_four']}", "status": card["status"], "fraud_case_id": card["fraud_case_id"]}
-        return self._record("get_blocked_card", {"customer_id": customer_id, "card_id": card_id}, {"authorized": authorized, "card": safe_card})
+        return self._record("get_blocked_card", {"customer_id": customer_id, "card_id": card_id}, {"authorized": authorized, "card": safe_card}, started_at)
 
     def get_flagged_transactions(self, customer_id: str, card_id: str, case_id: str) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         authorized = bool(
             card
@@ -80,7 +99,7 @@ class MockBankTools:
         )
         rows = [item.copy() for item in self.transactions if authorized and item["case_id"] == case_id]
         rows.sort(key=lambda item: item["date"], reverse=True)
-        return self._record("get_flagged_transactions", {"customer_id": customer_id, "card_id": card_id, "case_id": case_id}, {"authorized": authorized, "transactions": rows})
+        return self._record("get_flagged_transactions", {"customer_id": customer_id, "card_id": card_id, "case_id": case_id}, {"authorized": authorized, "transactions": rows}, started_at)
 
     def check_removal_eligibility(
         self,
@@ -90,6 +109,7 @@ class MockBankTools:
         verified_transaction_ids: list[str],
         recognized_transaction_ids: list[str],
     ) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         case = next((item for item in self.cases if item["case_id"] == case_id), None)
         case_transactions = [item for item in self.transactions if item["case_id"] == case_id]
@@ -111,9 +131,11 @@ class MockBankTools:
             "check_removal_eligibility",
             {"customer_id": customer_id, "card_id": card_id, "case_id": case_id, "verified_transaction_ids": verified_transaction_ids, "recognized_transaction_ids": recognized_transaction_ids},
             {"eligible": eligible, "checks": checks, "reason": case["reason"] if case else "Case not found", "authorization_token": token},
+            started_at,
         )
 
     def remove_fraud_block(self, customer_id: str, card_id: str, token: str | None) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         permitted = bool(
             card
@@ -125,19 +147,23 @@ class MockBankTools:
         )
         if permitted:
             card["status"] = "active"
-        return self._record("remove_fraud_block", {"customer_id": customer_id, "card_id": card_id, "authorization_token_present": bool(token)}, {"removed": permitted, "new_status": card["status"] if card else "not_found"})
+        return self._record("remove_fraud_block", {"customer_id": customer_id, "card_id": card_id, "authorization_token_present": bool(token)}, {"removed": permitted, "new_status": card["status"] if card else "not_found"}, started_at)
 
     def verify_card_status(self, customer_id: str, card_id: str) -> dict[str, Any]:
+        started_at = perf_counter()
         card = next((item for item in self.cards if item["card_id"] == card_id), None)
         authorized = bool(card and self.authenticated_customer_id == customer_id and card["customer_id"] == customer_id)
-        return self._record("verify_card_status", {"customer_id": customer_id, "card_id": card_id}, {"authorized": authorized, "card_id": card_id, "status": card["status"] if authorized else None})
+        return self._record("verify_card_status", {"customer_id": customer_id, "card_id": card_id}, {"authorized": authorized, "card_id": card_id, "status": card["status"] if authorized else None}, started_at)
 
     def escalate_to_human(self, reason: str) -> dict[str, Any]:
-        return self._record("escalate_to_human", {"reason": reason}, {"escalated": True, "queue": "mock_fraud_specialist"})
+        started_at = perf_counter()
+        return self._record("escalate_to_human", {"reason": reason}, {"escalated": True, "queue": "mock_fraud_specialist"}, started_at)
 
     def transfer_to_department(self, department: str) -> dict[str, Any]:
+        started_at = perf_counter()
         return self._record(
             "transfer_to_department",
             {"department": department},
             {"transferred": True, "department": department},
+            started_at,
         )

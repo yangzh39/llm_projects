@@ -2,10 +2,43 @@
   "run": "non_fraud_declines_help",
   "events": [
     {
-      "type": "llm_call",
-      "purpose": "intent_classification",
-      "attempt": 1,
-      "input": "What is the GIC rate?",
+      "sequence": 1,
+      "timestamp": "2026-08-06T07:49:13.409482+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "opening_message",
+        "message": "What is the GIC rate?"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 2,
+      "timestamp": "2026-08-06T07:49:13.409511+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "What is the GIC rate?",
+        "context": {}
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 3,
+      "timestamp": "2026-08-06T07:49:13.409541+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "intent_classification",
+        "message": "What is the GIC rate?",
+        "context": {}
+      },
       "output": {
         "human_message": "The Fraud Department does not handle What is the GIC rate?. I can transfer you to Investments. Before that, is there a fraud-related service I can help you with?",
         "chatbot_message": {
@@ -17,9 +50,27 @@
           "collected_facts": [],
           "reason": "Recorded result for reproducible evaluation"
         }
-      }
+      },
+      "duration_ms": 0.01,
+      "type": "llm_call",
+      "purpose": "intent_classification",
+      "attempt": 1,
+      "context": {}
     },
     {
+      "sequence": 4,
+      "timestamp": "2026-08-06T07:49:13.409578+00:00",
+      "event_type": "workflow_step",
+      "name": "intent_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "attempt": 1,
+        "goal": "NON_FRAUD",
+        "service": "Other",
+        "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "intent_interpreted",
       "attempt": 1,
@@ -28,17 +79,80 @@
       "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
     },
     {
+      "sequence": 5,
+      "timestamp": "2026-08-06T07:49:13.409596+00:00",
+      "event_type": "workflow_step",
+      "name": "route_selected",
+      "status": "success",
+      "input": {},
+      "output": {
+        "route": "NON_FRAUD",
+        "service": "Other",
+        "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
+      },
+      "duration_ms": 0.0,
+      "type": "workflow_step",
+      "step": "route_selected",
+      "route": "NON_FRAUD",
+      "service": "Other",
+      "action": "OFFER_TRANSFER_OR_FRAUD_HELP"
+    },
+    {
+      "sequence": 6,
+      "timestamp": "2026-08-06T07:49:13.409612+00:00",
+      "event_type": "workflow_step",
+      "name": "department_transfer_offered",
+      "status": "success",
+      "input": {},
+      "output": {
+        "department": "Investments"
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "department_transfer_offered",
       "department": "Investments"
     },
     {
-      "type": "llm_call",
-      "purpose": "customer_response_interpretation",
-      "attempt": 1,
-      "input": "No thanks",
-      "context": {
-        "question_type": "non_fraud_transfer_or_fraud_help"
+      "sequence": 7,
+      "timestamp": "2026-08-06T07:49:13.409625+00:00",
+      "event_type": "customer_message",
+      "name": "customer_message_received",
+      "status": "success",
+      "input": {
+        "kind": "department_transfer_confirmation",
+        "message": "No thanks"
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 8,
+      "timestamp": "2026-08-06T07:49:13.409636+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_started",
+      "status": "started",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "No thanks",
+        "context": {
+          "question_type": "non_fraud_transfer_or_fraud_help"
+        }
+      },
+      "output": {},
+      "duration_ms": 0.0
+    },
+    {
+      "sequence": 9,
+      "timestamp": "2026-08-06T07:49:13.409649+00:00",
+      "event_type": "llm_call",
+      "name": "llm_interpretation_completed",
+      "status": "success",
+      "input": {
+        "purpose": "customer_response_interpretation",
+        "message": "No thanks",
+        "context": {
+          "question_type": "non_fraud_transfer_or_fraud_help"
+        }
       },
       "output": {
         "human_message": "Thank you. I\u2019ll route your latest request correctly.",
@@ -48,21 +162,61 @@
           "interpreted_response": "No thanks",
           "reason": "Recorded interpretation for reproducible evaluation"
         }
+      },
+      "duration_ms": 0.003,
+      "type": "llm_call",
+      "purpose": "customer_response_interpretation",
+      "attempt": 1,
+      "context": {
+        "question_type": "non_fraud_transfer_or_fraud_help"
       }
     },
     {
+      "sequence": 10,
+      "timestamp": "2026-08-06T07:49:13.409673+00:00",
+      "event_type": "workflow_step",
+      "name": "customer_response_interpreted",
+      "status": "success",
+      "input": {},
+      "output": {
+        "question_type": "non_fraud_transfer_or_fraud_help",
+        "meaning": "NEGATIVE"
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "customer_response_interpreted",
       "question_type": "non_fraud_transfer_or_fraud_help",
       "meaning": "NEGATIVE"
     },
     {
+      "sequence": 11,
+      "timestamp": "2026-08-06T07:49:13.409687+00:00",
+      "event_type": "workflow_step",
+      "name": "department_transfer_confirmation",
+      "status": "success",
+      "input": {},
+      "output": {
+        "department": "Investments",
+        "confirmed": false
+      },
+      "duration_ms": 0.0,
       "type": "workflow_step",
       "step": "department_transfer_confirmation",
       "department": "Investments",
       "confirmed": false
     },
     {
+      "sequence": 12,
+      "timestamp": "2026-08-06T07:49:13.409701+00:00",
+      "event_type": "final_response",
+      "name": "final_response",
+      "status": "success",
+      "input": {},
+      "output": {
+        "message": "Thank you for contacting the Fraud Department. Take care.",
+        "disposition": "safe_stop"
+      },
+      "duration_ms": 0.0,
       "type": "final_response",
       "message": "Thank you for contacting the Fraud Department. Take care.",
       "disposition": "safe_stop"
@@ -75,7 +229,7 @@
     "efficiency": {
       "model_calls": 2,
       "tool_calls": 0,
-      "workflow_steps": 4,
+      "workflow_steps": 5,
       "repeated_tool_calls": 0,
       "unnecessary_calls": 0,
       "terminated_promptly_after_auth_failure": true

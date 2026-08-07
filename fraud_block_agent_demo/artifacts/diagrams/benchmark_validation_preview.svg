@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <style>
+    .sans { font-family: Arial, Helvetica, sans-serif; }
+    .mono { font-family: Menlo, Monaco, Consolas, monospace; }
+    .ink { fill: #172033; }
+    .muted { fill: #5f6b7a; }
+    .blue { fill: #2563a8; }
+    .cyan { fill: #087ea4; }
+    .green { fill: #168653; }
+    .orange { fill: #b65f00; }
+    .red { fill: #c83b3b; }
+  </style>
+
+  <!-- Header -->
+  <text x="65" y="58" class="sans ink" font-size="34" font-weight="700">Benchmark / Validation Set — Measure Change Across Versions</text>
+  <text x="65" y="95" class="sans muted" font-size="17">Fixed scenarios make agent behavior comparable across code, prompt, and model changes.</text>
+  <line x1="65" y1="121" x2="1535" y2="121" stroke="#d8dee8" stroke-width="2"/>
+
+  <!-- Definition -->
+  <rect x="65" y="146" width="1470" height="82" rx="14" fill="#f3f8fc" stroke="#b9c9da" stroke-width="2"/>
+  <rect x="65" y="146" width="9" height="82" fill="#20a7d3"/>
+  <text x="93" y="177" class="sans cyan" font-size="18" font-weight="700">DEFINITION</text>
+  <text x="93" y="207" class="sans ink" font-size="18">A benchmark contains representative scenarios and expected behaviors used to measure how agent performance changes across versions.</text>
+
+  <!-- Tree title -->
+  <text x="65" y="264" class="sans blue" font-size="20" font-weight="700">TWO EXECUTION MODES — ONE REUSABLE BENCHMARK</text>
+
+  <!-- Root -->
+  <rect x="245" y="282" width="500" height="58" rx="12" fill="#e8f1fb" stroke="#4b79b5" stroke-width="2"/>
+  <text x="495" y="307" class="sans blue" font-size="18" font-weight="700" text-anchor="middle">BENCHMARK / VALIDATION SET</text>
+  <text x="495" y="329" class="sans muted" font-size="14" text-anchor="middle">Scenarios + expected behavior</text>
+
+  <!-- Split -->
+  <line x1="495" y1="340" x2="495" y2="361" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="264" y1="361" x2="726" y2="361" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="264" y1="361" x2="264" y2="376" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="726" y1="361" x2="726" y2="376" stroke="#7f8ea3" stroke-width="2"/>
+
+  <!-- Offline -->
+  <rect x="65" y="376" width="398" height="105" rx="12" fill="#f7fcf9" stroke="#2f9a67" stroke-width="2"/>
+  <text x="264" y="406" class="sans green" font-size="18" font-weight="700" text-anchor="middle">OFFLINE DETERMINISTIC RUN</text>
+  <text x="264" y="432" class="sans ink" font-size="15" text-anchor="middle">Recorded model outputs</text>
+  <text x="264" y="459" class="sans muted" font-size="14" text-anchor="middle">Tests orchestration, tools, controls, state, and graders</text>
+
+  <!-- Live -->
+  <rect x="527" y="376" width="398" height="105" rx="12" fill="#fff7e8" stroke="#e4b264" stroke-width="2"/>
+  <text x="726" y="406" class="sans orange" font-size="18" font-weight="700" text-anchor="middle">LIVE MODEL RUN</text>
+  <text x="726" y="432" class="sans ink" font-size="15" text-anchor="middle">Current prompt + model API</text>
+  <text x="726" y="459" class="sans muted" font-size="14" text-anchor="middle">Tests interpretation, prompt quality, and integration</text>
+
+  <!-- Merge -->
+  <line x1="264" y1="481" x2="264" y2="498" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="726" y1="481" x2="726" y2="498" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="264" y1="498" x2="726" y2="498" stroke="#7f8ea3" stroke-width="2"/>
+  <line x1="495" y1="498" x2="495" y2="513" stroke="#7f8ea3" stroke-width="2"/>
+
+  <rect x="245" y="513" width="500" height="48" rx="11" fill="#f5f7fa" stroke="#aeb8c8" stroke-width="2"/>
+  <text x="495" y="543" class="sans ink" font-size="18" font-weight="700" text-anchor="middle">HYBRID EVALUATION REPORT</text>
+
+  <!-- Report contents -->
+  <rect x="975" y="282" width="560" height="279" rx="14" fill="#f8faff" stroke="#aac3e4" stroke-width="2"/>
+  <text x="1000" y="316" class="sans blue" font-size="20" font-weight="700">EACH BENCHMARK RUN REPORTS</text>
+
+  <rect x="1000" y="338" width="510" height="43" rx="9" fill="#eef4fc"/>
+  <text x="1018" y="365" class="sans blue" font-size="15" font-weight="700">Outcome / code checks</text>
+  <text x="1210" y="365" class="sans muted" font-size="14">Expected business result</text>
+
+  <rect x="1000" y="390" width="510" height="43" rx="9" fill="#fff7e8"/>
+  <text x="1018" y="417" class="sans orange" font-size="15" font-weight="700">Trajectory checks</text>
+  <text x="1210" y="417" class="sans muted" font-size="14">Required steps and dependencies</text>
+
+  <rect x="1000" y="442" width="510" height="43" rx="9" fill="#fff1f1"/>
+  <text x="1018" y="469" class="sans red" font-size="15" font-weight="700">Safety checks</text>
+  <text x="1210" y="469" class="sans muted" font-size="14">Prohibited actions avoided</text>
+
+  <rect x="1000" y="494" width="510" height="43" rx="9" fill="#edf9f2"/>
+  <text x="1018" y="521" class="sans green" font-size="15" font-weight="700">Operational metrics</text>
+  <text x="1210" y="521" class="sans muted" font-size="14">Calls, tokens, cost, and latency</text>
+
+  <!-- Comparison tables -->
+  <text x="65" y="598" class="sans ink" font-size="19" font-weight="700">ILLUSTRATIVE VERSION COMPARISONS</text>
+  <text x="505" y="598" class="sans muted" font-size="14">Example values—not measured project results</text>
+
+  <!-- Model comparison table -->
+  <rect x="65" y="614" width="720" height="223" rx="12" fill="#ffffff" stroke="#a9d8be" stroke-width="2"/>
+  <rect x="65" y="614" width="720" height="38" rx="12" fill="#e6f6ed"/>
+  <rect x="65" y="640" width="720" height="12" fill="#e6f6ed"/>
+  <text x="87" y="639" class="sans green" font-size="17" font-weight="700">MODEL UPGRADE — HIGHER QUALITY, HIGHER COST</text>
+
+  <text x="87" y="676" class="sans ink" font-size="13" font-weight="700">Result</text>
+  <text x="476" y="676" class="sans ink" font-size="13" font-weight="700" text-anchor="middle">Current model</text>
+  <text x="673" y="676" class="sans green" font-size="13" font-weight="700" text-anchor="middle">Advanced model</text>
+  <line x1="87" y1="686" x2="763" y2="686" stroke="#d8dee8"/>
+
+  <g class="sans" font-size="12.5">
+    <text x="87" y="707" class="ink">Scenarios passed</text><text x="476" y="707" class="muted" text-anchor="middle">8/10</text><text x="673" y="707" class="green" text-anchor="middle">9/10</text>
+    <text x="87" y="728" class="ink">Correct routing / trajectory</text><text x="476" y="728" class="muted" text-anchor="middle">90% / 80%</text><text x="673" y="728" class="green" text-anchor="middle">100% / 90%</text>
+    <text x="87" y="749" class="ink">Structured output</text><text x="476" y="749" class="muted" text-anchor="middle">100%</text><text x="673" y="749" class="green" text-anchor="middle">100%</text>
+    <text x="87" y="770" class="ink">Average API calls</text><text x="476" y="770" class="muted" text-anchor="middle">2.4</text><text x="673" y="770" class="orange" text-anchor="middle">3.1</text>
+    <text x="87" y="791" class="ink">Cost / latency</text><text x="476" y="791" class="muted" text-anchor="middle">$0.028 / 2.9s</text><text x="673" y="791" class="orange" text-anchor="middle">$0.052 / 4.2s</text>
+    <text x="87" y="818" class="ink" font-weight="700">Decision</text><text x="476" y="818" class="muted" text-anchor="middle">Baseline</text><text x="673" y="818" class="green" text-anchor="middle" font-weight="700">Weigh quality vs. cost</text>
+  </g>
+
+  <!-- Prompt comparison table -->
+  <rect x="815" y="614" width="720" height="223" rx="12" fill="#ffffff" stroke="#cf7a7a" stroke-width="2"/>
+  <rect x="815" y="614" width="720" height="38" rx="12" fill="#fdeaea"/>
+  <rect x="815" y="640" width="720" height="12" fill="#fdeaea"/>
+  <text x="837" y="639" class="sans red" font-size="17" font-weight="700">PROMPT CHANGE — REGRESSION REQUIRES INVESTIGATION</text>
+
+  <text x="837" y="676" class="sans ink" font-size="13" font-weight="700">Result</text>
+  <text x="1226" y="676" class="sans ink" font-size="13" font-weight="700" text-anchor="middle">Prompt v1</text>
+  <text x="1423" y="676" class="sans red" font-size="13" font-weight="700" text-anchor="middle">Prompt v2</text>
+  <line x1="837" y1="686" x2="1513" y2="686" stroke="#d8dee8"/>
+
+  <g class="sans" font-size="12.5">
+    <text x="837" y="707" class="ink">Scenarios passed</text><text x="1226" y="707" class="muted" text-anchor="middle">9/10</text><text x="1423" y="707" class="red" text-anchor="middle">7/10</text>
+    <text x="837" y="728" class="ink">Correct routing / trajectory</text><text x="1226" y="728" class="muted" text-anchor="middle">100% / 90%</text><text x="1423" y="728" class="red" text-anchor="middle">80% / 70%</text>
+    <text x="837" y="749" class="ink">Structured output</text><text x="1226" y="749" class="muted" text-anchor="middle">100%</text><text x="1423" y="749" class="red" text-anchor="middle">90%</text>
+    <text x="837" y="770" class="ink">Average API calls</text><text x="1226" y="770" class="muted" text-anchor="middle">2.6</text><text x="1423" y="770" class="red" text-anchor="middle">3.4</text>
+    <text x="837" y="791" class="ink">Cost / latency</text><text x="1226" y="791" class="muted" text-anchor="middle">$0.030 / 3.2s</text><text x="1423" y="791" class="red" text-anchor="middle">$0.039 / 4.6s</text>
+    <text x="837" y="818" class="ink" font-weight="700">Decision</text><text x="1226" y="818" class="muted" text-anchor="middle">Current version</text><text x="1423" y="818" class="red" text-anchor="middle" font-weight="700">Investigate — do not release</text>
+  </g>
+
+  <!-- Takeaway -->
+  <rect x="65" y="853" width="1470" height="32" rx="10" fill="#fff7e8" stroke="#e58a1f"/>
+  <text x="800" y="875" class="sans ink" font-size="15" text-anchor="middle">Benchmarking makes change measurable: compare quality, safety, cost, and latency before deciding whether to release.</text>
+</svg>
