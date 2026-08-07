@@ -1,3 +1,19 @@
 __pycache__/
 *.pyc
 .env
+
+# Generated presentation and media artifacts (the curated AgenticAI_Eval.pptx
+# at the project root remains tracked).
+artifacts/
+
+# One-off artifact generators and video encoders
+artifact_paths.py
+build_*.py
+encode_slideshow.m
+encode_slideshow.swift
+
+# Generated runtime and benchmark reports
+traces/*
+!traces/.gitkeep
+evaluation/outputs/*
+!evaluation/outputs/.gitkeep
