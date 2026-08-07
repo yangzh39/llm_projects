@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from time import perf_counter
 from typing import Any
 
@@ -109,7 +110,9 @@ def load_model_config() -> ModelConfig:
         # Exported environment variables still work without python-dotenv.
         pass
     else:
-        load_dotenv()
+        project_env = Path(__file__).resolve().with_name(".env")
+        load_dotenv(project_env)
+        load_dotenv(project_env.parent.parent / ".env")
 
     provider = os.getenv("LLM_PROVIDER", "").strip().lower()
     if not provider:

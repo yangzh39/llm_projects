@@ -25,12 +25,15 @@ class Chunk:
 
 
 def load_env() -> tuple[str, str, str]:
-    load_dotenv()
+    # Prefer this project's private configuration. The repository-root file is
+    # retained only as a backward-compatible fallback for existing local users.
+    load_dotenv(ROOT / ".env")
+    load_dotenv(ROOT.parent / ".env")
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip().rstrip("/")
     model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat").strip()
     if not api_key:
-        raise RuntimeError("DEEPSEEK_API_KEY is missing. Keep it in your existing .env file.")
+        raise RuntimeError("DEEPSEEK_API_KEY is missing. Add it to rag/.env.")
     return api_key, base_url, model
 
 

@@ -16,19 +16,19 @@ cd llm_projects
 Create an isolated environment and install only this demo's dependencies:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv fraud_block_agent_demo/.venv
+source fraud_block_agent_demo/.venv/bin/activate
 python -m pip install -r fraud_block_agent_demo/requirements.txt
 ```
 
-On Windows, activate the environment with `.venv\Scripts\activate`.
+On Windows, activate the environment with `fraud_block_agent_demo\.venv\Scripts\activate`.
 
 ### Configure your model
 
-Copy the safe configuration template to the repository-root `.env` file:
+Copy the safe configuration template to this project's private `.env` file:
 
 ```bash
-cp fraud_block_agent_demo/.env.example .env
+cp fraud_block_agent_demo/.env.example fraud_block_agent_demo/.env
 ```
 
 Every user must select a provider and model. Generic `LLM_*` variables work across all supported providers:
@@ -75,7 +75,7 @@ LLM_USE_JSON_MODE=false
 
 Custom local endpoints may omit `LLM_API_KEY`. Set `LLM_API_STYLE=anthropic` only when a custom endpoint implements the Anthropic Messages API. Set `LLM_USE_JSON_MODE=false` when an OpenAI-compatible endpoint does not support the `response_format` parameter; the system prompt will still request JSON.
 
-Existing private DeepSeek configurations remain backward-compatible. If `LLM_PROVIDER` is absent but `DEEPSEEK_API_KEY` exists, the application uses `DEEPSEEK_BASE_URL` and `DEEPSEEK_MODEL`. Generic `LLM_*` variables take precedence, and credentials are never written to traces.
+Existing repository-root DeepSeek configurations remain a backward-compatible local fallback. New users should keep configuration in `fraud_block_agent_demo/.env`. If `LLM_PROVIDER` is absent but `DEEPSEEK_API_KEY` exists, the application uses `DEEPSEEK_BASE_URL` and `DEEPSEEK_MODEL`. Generic `LLM_*` variables take precedence, and credentials are never written to traces.
 
 ## Run 1: interactive exploration
 
